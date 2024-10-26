@@ -20,6 +20,7 @@ const (
 	MOV
 	ADD
 	SUB
+	MUL
 	JMP
 	JMZ
 	JMN
@@ -39,6 +40,8 @@ func (o OpCode) String() string {
 		return "ADD"
 	case SUB:
 		return "SUB"
+	case MUL:
+		return "MUL"
 	case JMP:
 		return "JMP"
 	}
@@ -46,11 +49,13 @@ func (o OpCode) String() string {
 }
 
 const (
-	A OpMode = iota
+	F OpMode = iota
+	A
 	B
 	AB
+	BA
+	X
 	I
-	F
 )
 
 func (om OpMode) String() string {
@@ -61,8 +66,12 @@ func (om OpMode) String() string {
 		return "B"
 	case AB:
 		return "AB"
+	case BA:
+		return "BA"
 	case F:
 		return "F"
+	case X:
+		return "X"
 	case I:
 		return "I"
 	}
@@ -70,8 +79,8 @@ func (om OpMode) String() string {
 }
 
 const (
-	IMMEDIATE AddressMode = iota
-	DIRECT
+	DIRECT AddressMode = iota
+	IMMEDIATE
 	B_INDIRECT
 	B_DECREMENT
 )

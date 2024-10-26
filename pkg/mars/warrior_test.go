@@ -40,7 +40,9 @@ func makeDwarfData() *WarriorData {
 				Op:     DAT,
 				OpMode: F,
 				AMode:  IMMEDIATE,
+				A:      0,
 				BMode:  IMMEDIATE,
+				B:      0,
 			},
 		}}
 }
@@ -48,7 +50,7 @@ func makeDwarfData() *WarriorData {
 func TestWarriorMethodLoadCode88(t *testing.T) {
 	wdata := makeDwarfData()
 	sim := makeSim88()
-	w, err := sim.AddWarrior(wdata, 0)
+	w, err := sim.SpawnWarrior(wdata, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +67,7 @@ func TestWarriorMethodLoadCode88(t *testing.T) {
 func TestWarriorMethodLoadCode94(t *testing.T) {
 	wdata := makeDwarfData()
 	sim := makeSim94()
-	w, err := sim.AddWarrior(wdata, 0)
+	w, err := sim.SpawnWarrior(wdata, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
