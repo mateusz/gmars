@@ -18,8 +18,6 @@ func getOpCode88(op string) (OpCode, error) {
 		return ADD, nil
 	case "sub":
 		return SUB, nil
-	case "mul":
-		return MUL, nil
 	case "jmp":
 		return JMP, nil
 	case "jmz":
