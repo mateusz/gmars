@@ -17,6 +17,7 @@ type redcodeTest struct {
 	processes Address
 	start     Address
 	turns     int
+	offset    Address
 	pq        []Address
 }
 
@@ -122,7 +123,7 @@ func runTests(t *testing.T, set_name string, tests []redcodeTest) {
 		config := BasicConfig(ICWS88, coresize, processes, 1, 100)
 
 		sim := NewSimulator(config)
-		w, err := sim.SpawnWarrior(&WarriorData{Code: code}, test.start)
+		w, err := sim.SpawnWarrior(&WarriorData{Code: code, Start: int(test.offset)}, test.start)
 		require.NoError(t, err)
 
 		for i := 0; i < turns; i++ {
@@ -479,6 +480,13 @@ func TestJMP(t *testing.T) {
 			output: []string{"jmp.i $2, $0", "dat.f $0, $0", "dat.f $0, $0", "dat.f $0, $0"},
 			pq:     []Address{2},
 		},
+		// non-zero PC
+		{
+			input:  []string{"dat.f $0, $0", "jmp.i $2, $0"},
+			output: []string{"dat.f $0, $0", "jmp.i $2, $0", "dat.f $0, $0", "dat.f $0, $0", "dat.f $0, $0"},
+			pq:     []Address{3},
+			offset: 1,
+		},
 	}
 	runTests(t, "jmp", tests)
 }
@@ -591,6 +599,13 @@ func TestJMZ(t *testing.T) {
 			input:  []string{"jmz.i $2, $1", "dat.f $1, $1"},
 			output: []string{"jmz.i $2, $1", "dat.f $1, $1", "dat.f $0, $0", "dat.f $0, $0"},
 			pq:     []Address{1},
+		},
+		// non zero PC
+		{
+			input:  []string{"dat.f $0, $0", "jmz.i $2, $1"},
+			output: []string{"dat.f $0, $0", "jmz.i $2, $1", "dat.f $0, $0", "dat.f $0, $0", "dat.f $0, $0"},
+			pq:     []Address{3},
+			offset: 1,
 		},
 	}
 	runTests(t, "jmz", tests)
@@ -705,6 +720,13 @@ func TestJMN(t *testing.T) {
 			output: []string{"jmn.i $2, $1", "dat.f $0, $0", "dat.f $0, $0", "dat.f $0, $0"},
 			pq:     []Address{1},
 		},
+		// non-zero PC
+		{
+			input:  []string{"dat.f $0, $0", "jmn.i $2, $0"},
+			output: []string{"dat.f $0, $0", "jmn.i $2, $0", "dat.f $0, $0", "dat.f $0, $0", "dat.f $0, $0"},
+			pq:     []Address{3},
+			offset: 1,
+		},
 	}
 	runTests(t, "jmn", tests)
 }
@@ -783,7 +805,15 @@ func TestDNJ(t *testing.T) {
 			output: []string{"djn.i $2, $1", "dat.f $0, $0", "dat.f $0, $0", "dat.f $0, $0"},
 			pq:     []Address{1},
 		},
+		// non-zero PC
+		{
+			input:  []string{"dat.f $0, $0", "djn.i $2, $1"},
+			output: []string{"dat.f $0, $0", "djn.i $2, $1", "dat.f $-1, $-1", "dat.f $0, $0", "dat.f $0, $0"},
+			pq:     []Address{3},
+			offset: 1,
+		},
 	}
+
 	runTests(t, "djn", tests)
 }
 
@@ -1024,6 +1054,13 @@ func TestSPL(t *testing.T) {
 			input:  []string{"spl.b <0, $0"},
 			output: []string{"spl.b <0, $-1", "dat.f $0, $0", "dat.f $0, $0", "dat.f $0, $0"},
 			pq:     []Address{1, 3},
+		},
+		// non-zero PC
+		{
+			input:  []string{"dat.f $0, $0", "spl.b $2, $0"},
+			output: []string{"dat.f $0, $0", "spl.b $2, $0", "dat.f $0, $0", "dat.f $0, $0", "dat.f $0, $0"},
+			pq:     []Address{2, 3},
+			offset: 1,
 		},
 	}
 	runTests(t, "spl", tests)

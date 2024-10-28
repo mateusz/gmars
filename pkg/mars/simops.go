@@ -88,13 +88,13 @@ func (s *Simulator) mul(IR, IRA, IRB Instruction, WAB, PC Address, pq *processQu
 	pq.Push((PC + 1) % s.m)
 }
 
-func (s *Simulator) jmz(IR, IRB Instruction, RPA, PC Address, pq *processQueue) {
+func (s *Simulator) jmz(IR, IRB Instruction, RAB, PC Address, pq *processQueue) {
 	switch IR.OpMode {
 	case A:
 		fallthrough
 	case BA:
 		if IRB.A == 0 {
-			pq.Push(RPA)
+			pq.Push(RAB)
 		} else {
 			pq.Push((PC + 1) % s.m)
 		}
@@ -102,7 +102,7 @@ func (s *Simulator) jmz(IR, IRB Instruction, RPA, PC Address, pq *processQueue) 
 		fallthrough
 	case AB:
 		if IRB.B == 0 {
-			pq.Push(RPA)
+			pq.Push(RAB)
 		} else {
 			pq.Push((PC + 1) % s.m)
 		}
@@ -112,20 +112,20 @@ func (s *Simulator) jmz(IR, IRB Instruction, RPA, PC Address, pq *processQueue) 
 		fallthrough
 	case I:
 		if IRB.A == 0 && IRB.B == 0 {
-			pq.Push(RPA)
+			pq.Push(RAB % s.m)
 		} else {
 			pq.Push((PC + 1) % s.m)
 		}
 	}
 }
 
-func (s *Simulator) jmn(IR, IRB Instruction, RPA, PC Address, pq *processQueue) {
+func (s *Simulator) jmn(IR, IRB Instruction, RAB, PC Address, pq *processQueue) {
 	switch IR.OpMode {
 	case A:
 		fallthrough
 	case BA:
 		if IRB.A != 0 {
-			pq.Push(RPA)
+			pq.Push(RAB)
 		} else {
 			pq.Push((PC + 1) % s.m)
 		}
@@ -133,7 +133,7 @@ func (s *Simulator) jmn(IR, IRB Instruction, RPA, PC Address, pq *processQueue) 
 		fallthrough
 	case AB:
 		if IRB.B != 0 {
-			pq.Push(RPA)
+			pq.Push(RAB)
 		} else {
 			pq.Push((PC + 1) % s.m)
 		}
@@ -143,14 +143,14 @@ func (s *Simulator) jmn(IR, IRB Instruction, RPA, PC Address, pq *processQueue) 
 		fallthrough
 	case I:
 		if IRB.A != 0 || IRB.B != 0 {
-			pq.Push(RPA)
+			pq.Push(RAB)
 		} else {
 			pq.Push((PC + 1) % s.m)
 		}
 	}
 }
 
-func (s *Simulator) djn(IR, IRB Instruction, RPA, WAB, PC Address, pq *processQueue) {
+func (s *Simulator) djn(IR, IRB Instruction, RAB, WAB, PC Address, pq *processQueue) {
 	switch IR.OpMode {
 	case A:
 		fallthrough
@@ -158,7 +158,7 @@ func (s *Simulator) djn(IR, IRB Instruction, RPA, WAB, PC Address, pq *processQu
 		s.mem[WAB].A = (s.mem[WAB].A + s.m - 1) % s.m
 		IRB.A -= 1
 		if IRB.A != 0 {
-			pq.Push(RPA)
+			pq.Push(RAB)
 		} else {
 			pq.Push((PC + 1) % s.m)
 		}
@@ -168,7 +168,7 @@ func (s *Simulator) djn(IR, IRB Instruction, RPA, WAB, PC Address, pq *processQu
 		s.mem[WAB].B = (s.mem[WAB].B + s.m - 1) % s.m
 		IRB.B -= 1
 		if IRB.B != 0 {
-			pq.Push(RPA)
+			pq.Push(RAB)
 		} else {
 			pq.Push((PC + 1) % s.m)
 		}
@@ -182,7 +182,7 @@ func (s *Simulator) djn(IR, IRB Instruction, RPA, WAB, PC Address, pq *processQu
 		s.mem[WAB].B = (s.mem[WAB].B + s.m - 1) % s.m
 		IRB.B -= 1
 		if IRB.B != 0 || IRB.A != 0 {
-			pq.Push(RPA)
+			pq.Push(RAB)
 		} else {
 			pq.Push((PC + 1) % s.m)
 		}

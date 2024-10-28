@@ -192,7 +192,8 @@ func (s *Simulator) exec(PC Address, pq *processQueue) {
 		IRB = s.mem[(PC+RPB)%s.m]
 	}
 
-	WAB := (WPB + PC) % s.m
+	WAB := (PC + WPB) % s.m
+	RAB := (PC + RPA) % s.m
 
 	switch IR.Op {
 	case DAT:
@@ -206,20 +207,20 @@ func (s *Simulator) exec(PC Address, pq *processQueue) {
 	case MUL:
 		s.mul(IR, IRA, IRB, WAB, PC, pq)
 	case JMP:
-		pq.Push((PC + RPA) % s.m)
+		pq.Push(RAB)
 	case JMZ:
-		s.jmz(IR, IRB, RPA, PC, pq)
+		s.jmz(IR, IRB, RAB, PC, pq)
 	case JMN:
-		s.jmn(IR, IRB, RPA, PC, pq)
+		s.jmn(IR, IRB, RAB, PC, pq)
 	case DJN:
-		s.djn(IR, IRB, RPA, WAB, PC, pq)
+		s.djn(IR, IRB, RAB, WAB, PC, pq)
 	case CMP:
 		s.cmp(IR, IRA, IRB, PC, pq)
 	case SLT:
 		s.slt(IR, IRA, IRB, PC, pq)
 	case SPL:
 		pq.Push((PC + 1) % s.m)
-		pq.Push(RPA)
+		pq.Push(RAB)
 	}
 }
 
