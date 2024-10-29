@@ -49,6 +49,10 @@ func getOpCode(op string) (OpCode, error) {
 		return SUB, nil
 	case "mul":
 		return MUL, nil
+	case "div":
+		return DIV, nil
+	case "mod":
+		return MOD, nil
 	case "jmp":
 		return JMP, nil
 	case "jmz":
@@ -59,10 +63,16 @@ func getOpCode(op string) (OpCode, error) {
 		return DJN, nil
 	case "cmp":
 		return CMP, nil
+	case "seq":
+		return SEQ, nil
 	case "slt":
 		return SLT, nil
+	case "sne":
+		return SNE, nil
 	case "spl":
 		return SPL, nil
+	case "nop":
+		return NOP, nil
 	default:
 		return 0, fmt.Errorf("invalid opcode '%s'", op)
 	}

@@ -29,13 +29,18 @@ const (
 	ADD
 	SUB
 	MUL
+	DIV
+	MOD
 	JMP
 	JMZ
 	JMN
 	CMP
+	SEQ
 	SLT
+	SNE
 	DJN
 	SPL
+	NOP
 )
 
 func (o OpCode) String() string {

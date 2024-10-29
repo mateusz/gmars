@@ -443,6 +443,234 @@ func TestMUL(t *testing.T) {
 	runTests(t, "mul", tests)
 }
 
+func TestDIV(t *testing.T) {
+	tests := []redcodeTest{
+		{
+			input:    []string{"div.a $1, $2", "dat.f #2, #3", "dat.f #6, #12"},
+			output:   []string{"div.a $1, $2", "dat.f #2, #3", "dat.f #3, #12"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"div.a $1, $2", "dat.f #0, #3", "dat.f #6, #12"},
+			output:   []string{"div.a $1, $2", "dat.f #0, #3", "dat.f #6, #12"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+
+		{
+			input:    []string{"div.b $1, $2", "dat.f #2, #3", "dat.f #6, #12"},
+			output:   []string{"div.b $1, $2", "dat.f #2, #3", "dat.f #6, #4"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"div.b $1, $2", "dat.f #2, #0", "dat.f #6, #12"},
+			output:   []string{"div.b $1, $2", "dat.f #2, #0", "dat.f #6, #12"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+
+		{
+			input:    []string{"div.ab $1, $2", "dat.f #2, #3", "dat.f #6, #12"},
+			output:   []string{"div.ab $1, $2", "dat.f #2, #3", "dat.f #6, #6"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"div.ab $1, $2", "dat.f #0, #3", "dat.f #6, #12"},
+			output:   []string{"div.ab $1, $2", "dat.f #0, #3", "dat.f #6, #12"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+
+		{
+			input:    []string{"div.ba $1, $2", "dat.f #2, #3", "dat.f #6, #12"},
+			output:   []string{"div.ba $1, $2", "dat.f #2, #3", "dat.f #2, #12"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"div.ba $1, $2", "dat.f #2, #0", "dat.f #6, #12"},
+			output:   []string{"div.ba $1, $2", "dat.f #2, #0", "dat.f #6, #12"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+
+		{
+			input:    []string{"div.f $1, $2", "dat.f #2, #3", "dat.f #6, #12"},
+			output:   []string{"div.f $1, $2", "dat.f #2, #3", "dat.f #3, #4"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"div.f $1, $2", "dat.f #0, #3", "dat.f #6, #12"},
+			output:   []string{"div.f $1, $2", "dat.f #0, #3", "dat.f #6, #4"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+		{
+			input:    []string{"div.f $1, $2", "dat.f #2, #0", "dat.f #6, #12"},
+			output:   []string{"div.f $1, $2", "dat.f #2, #0", "dat.f #3, #12"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+
+		{
+			input:    []string{"div.i $1, $2", "dat.f #2, #3", "dat.f #6, #12"},
+			output:   []string{"div.i $1, $2", "dat.f #2, #3", "dat.f #3, #4"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"div.i $1, $2", "dat.f #0, #3", "dat.f #6, #12"},
+			output:   []string{"div.i $1, $2", "dat.f #0, #3", "dat.f #6, #4"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+		{
+			input:    []string{"div.i $1, $2", "dat.f #2, #0", "dat.f #6, #12"},
+			output:   []string{"div.i $1, $2", "dat.f #2, #0", "dat.f #3, #12"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+
+		{
+			input:    []string{"div.x $1, $2", "dat.f #2, #3", "dat.f #6, #12"},
+			output:   []string{"div.x $1, $2", "dat.f #2, #3", "dat.f #2, #6"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"div.x $1, $2", "dat.f #0, #3", "dat.f #6, #12"},
+			output:   []string{"div.x $1, $2", "dat.f #0, #3", "dat.f #2, #12"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+		{
+			input:    []string{"div.x $1, $2", "dat.f #2, #0", "dat.f #6, #12"},
+			output:   []string{"div.x $1, $2", "dat.f #2, #0", "dat.f #6, #6"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+	}
+	runTests(t, "div", tests)
+}
+
+func TestMOD(t *testing.T) {
+	tests := []redcodeTest{
+		{
+			input:    []string{"mod.a $1, $2", "dat.f #3, #4", "dat.f #10, #15"},
+			output:   []string{"mod.a $1, $2", "dat.f #3, #4", "dat.f #1, #15"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"mod.a $1, $2", "dat.f #0, #4", "dat.f #10, #15"},
+			output:   []string{"mod.a $1, $2", "dat.f #0, #4", "dat.f #10, #15"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+
+		{
+			input:    []string{"mod.b $1, $2", "dat.f #3, #4", "dat.f #10, #15"},
+			output:   []string{"mod.b $1, $2", "dat.f #3, #4", "dat.f #10, #3"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"mod.b $1, $2", "dat.f #3, #0", "dat.f #10, #15"},
+			output:   []string{"mod.b $1, $2", "dat.f #3, #0", "dat.f #10, #15"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+
+		{
+			input:    []string{"mod.ab $1, $2", "dat.f #3, #4", "dat.f #10, #15"},
+			output:   []string{"mod.ab $1, $2", "dat.f #3, #4", "dat.f #10, #0"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"mod.ab $1, $2", "dat.f #0, #4", "dat.f #10, #15"},
+			output:   []string{"mod.ab $1, $2", "dat.f #0, #4", "dat.f #10, #15"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+
+		{
+			input:    []string{"mod.ba $1, $2", "dat.f #3, #4", "dat.f #10, #15"},
+			output:   []string{"mod.ba $1, $2", "dat.f #3, #4", "dat.f #2, #15"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"mod.ba $1, $2", "dat.f #3, #0", "dat.f #10, #15"},
+			output:   []string{"mod.ba $1, $2", "dat.f #3, #0", "dat.f #10, #15"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+
+		{
+			input:    []string{"mod.f $1, $2", "dat.f #3, #4", "dat.f #10, #15"},
+			output:   []string{"mod.f $1, $2", "dat.f #3, #4", "dat.f #1, #3"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"mod.f $1, $2", "dat.f #3, #0", "dat.f #10, #15"},
+			output:   []string{"mod.f $1, $2", "dat.f #3, #0", "dat.f #1, #15"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+		{
+			input:    []string{"mod.f $1, $2", "dat.f #0, #4", "dat.f #10, #15"},
+			output:   []string{"mod.f $1, $2", "dat.f #0, #4", "dat.f #10, #3"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+
+		{
+			input:    []string{"mod.i $1, $2", "dat.f #3, #4", "dat.f #10, #15"},
+			output:   []string{"mod.i $1, $2", "dat.f #3, #4", "dat.f #1, #3"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"mod.i $1, $2", "dat.f #3, #0", "dat.f #10, #15"},
+			output:   []string{"mod.i $1, $2", "dat.f #3, #0", "dat.f #1, #15"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+		{
+			input:    []string{"mod.i $1, $2", "dat.f #0, #4", "dat.f #10, #15"},
+			output:   []string{"mod.i $1, $2", "dat.f #0, #4", "dat.f #10, #3"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+
+		{
+			input:    []string{"mod.x $1, $2", "dat.f #3, #4", "dat.f #10, #15"},
+			output:   []string{"mod.x $1, $2", "dat.f #3, #4", "dat.f #2, #0"},
+			pq:       []Address{1},
+			coresize: 256,
+		},
+		{
+			input:    []string{"mod.x $1, $2", "dat.f #3, #0", "dat.f #10, #15"},
+			output:   []string{"mod.x $1, $2", "dat.f #3, #0", "dat.f #10, #0"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+		{
+			input:    []string{"mod.x $1, $2", "dat.f #0, #4", "dat.f #10, #15"},
+			output:   []string{"mod.x $1, $2", "dat.f #0, #4", "dat.f #2, #15"},
+			pq:       []Address{},
+			coresize: 256,
+		},
+	}
+	runTests(t, "mod", tests)
+}
+
 func TestJMP(t *testing.T) {
 	tests := []redcodeTest{
 		{
@@ -935,6 +1163,233 @@ func TestCMP(t *testing.T) {
 	runTests(t, "cmp", tests)
 }
 
+func TestSEQ(t *testing.T) {
+	tests := []redcodeTest{
+		// positive cases all modes
+		{
+			input:  []string{"seq.a $1, $2", "dat.f $1, $2", "dat.f $1, $4"},
+			output: []string{"seq.a $1, $2", "dat.f $1, $2", "dat.f $1, $4", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"seq.b $1, $2", "dat.f $1, $2", "dat.f $3, $2"},
+			output: []string{"seq.b $1, $2", "dat.f $1, $2", "dat.f $3, $2", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"seq.ab $1, $2", "dat.f $1, $2", "dat.f $3, $1"},
+			output: []string{"seq.ab $1, $2", "dat.f $1, $2", "dat.f $3, $1", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"seq.ba $1, $2", "dat.f $1, $2", "dat.f $2, $4"},
+			output: []string{"seq.ba $1, $2", "dat.f $1, $2", "dat.f $2, $4", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"seq.f $1, $2", "dat.f $1, $2", "dat.f $1, $2"},
+			output: []string{"seq.f $1, $2", "dat.f $1, $2", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"seq.x $1, $2", "dat.f $1, $2", "dat.f $2, $1"},
+			output: []string{"seq.x $1, $2", "dat.f $1, $2", "dat.f $2, $1", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"seq.i $1, $2", "dat.f $1, $2", "dat.f $1, $2"},
+			output: []string{"seq.i $1, $2", "dat.f $1, $2", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"seq.i $1, $2", "dat.f $1, $2", "dat.f $1, $2"},
+			output: []string{"seq.i $1, $2", "dat.f $1, $2", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		// negative cases all modes
+		{
+			input:  []string{"seq.a $1, $2", "dat.f $1, $2", "dat.f $3, $2"},
+			output: []string{"seq.a $1, $2", "dat.f $1, $2", "dat.f $3, $2", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"seq.b $1, $2", "dat.f $1, $2", "dat.f $1, $4"},
+			output: []string{"seq.b $1, $2", "dat.f $1, $2", "dat.f $1, $4", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"seq.ab $1, $2", "dat.f $1, $1", "dat.f $1, $4"},
+			output: []string{"seq.ab $1, $2", "dat.f $1, $1", "dat.f $1, $4", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"seq.ba $1, $2", "dat.f $1, $2", "dat.f $3, $1"},
+			output: []string{"seq.ba $1, $2", "dat.f $1, $2", "dat.f $3, $1", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"seq.f $1, $2", "dat.f $1, $2", "dat.f $1, $3"},
+			output: []string{"seq.f $1, $2", "dat.f $1, $2", "dat.f $1, $3", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"seq.f $1, $2", "dat.f $1, $2", "dat.f $3, $2"},
+			output: []string{"seq.f $1, $2", "dat.f $1, $2", "dat.f $3, $2", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"seq.x $1, $2", "dat.f $1, $2", "dat.f $3, $1"},
+			output: []string{"seq.x $1, $2", "dat.f $1, $2", "dat.f $3, $1", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"seq.x $1, $2", "dat.f $1, $2", "dat.f $2, $4"},
+			output: []string{"seq.x $1, $2", "dat.f $1, $2", "dat.f $2, $4", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"seq.i $1, $2", "add.f $1, $2", "dat.f $1, $2"},
+			output: []string{"seq.i $1, $2", "add.f $1, $2", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"seq.i $1, $2", "dat.a $1, $2", "dat.f $1, $2"},
+			output: []string{"seq.i $1, $2", "dat.a $1, $2", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"seq.i $1, $2", "dat.f #1, $2", "dat.f $1, $2"},
+			output: []string{"seq.i $1, $2", "dat.f #1, $2", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"seq.i $1, $2", "dat.f $2, $2", "dat.f $1, $2"},
+			output: []string{"seq.i $1, $2", "dat.f $2, $2", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"seq.i $1, $2", "dat.f $1, #2", "dat.f $1, $2"},
+			output: []string{"seq.i $1, $2", "dat.f $1, #2", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"seq.i $1, $2", "dat.f $1, $1", "dat.f $1, $2"},
+			output: []string{"seq.i $1, $2", "dat.f $1, $1", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+	}
+	runTests(t, "seq", tests)
+}
+
+func TestSNE(t *testing.T) {
+	tests := []redcodeTest{
+		// positive cases all modes
+		{
+			input:  []string{"sne.a $1, $2", "dat.f $1, $2", "dat.f $3, $2"},
+			output: []string{"sne.a $1, $2", "dat.f $1, $2", "dat.f $3, $2", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"sne.b $1, $2", "dat.f $1, $2", "dat.f $1, $4"},
+			output: []string{"sne.b $1, $2", "dat.f $1, $2", "dat.f $1, $4", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"sne.ab $1, $2", "dat.f $1, $2", "dat.f $2, $4"},
+			output: []string{"sne.ab $1, $2", "dat.f $1, $2", "dat.f $2, $4", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"sne.ba $1, $2", "dat.f $1, $2", "dat.f $3, $1"},
+			output: []string{"sne.ba $1, $2", "dat.f $1, $2", "dat.f $3, $1", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"sne.f $1, $2", "dat.f $1, $2", "dat.f $3, $2"},
+			output: []string{"sne.f $1, $2", "dat.f $1, $2", "dat.f $3, $2", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"sne.f $1, $2", "dat.f $1, $2", "dat.f $1, $4"},
+			output: []string{"sne.f $1, $2", "dat.f $1, $2", "dat.f $1, $4", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"sne.x $1, $2", "dat.f $1, $2", "dat.f $1, $1"},
+			output: []string{"sne.x $1, $2", "dat.f $1, $2", "dat.f $1, $1", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"sne.x $1, $2", "dat.f $1, $2", "dat.f $2, $2"},
+			output: []string{"sne.x $1, $2", "dat.f $1, $2", "dat.f $2, $2", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"sne.i $1, $2", "add.f $1, $2", "dat.f $1, $2"},
+			output: []string{"sne.i $1, $2", "add.f $1, $2", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"sne.i $1, $2", "dat.f #1, $2", "dat.f $1, $2"},
+			output: []string{"sne.i $1, $2", "dat.f #1, $2", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"sne.i $1, $2", "dat.f $2, $2", "dat.f $1, $2"},
+			output: []string{"sne.i $1, $2", "dat.f $2, $2", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"sne.i $1, $2", "dat.f $1, #2", "dat.f $1, $2"},
+			output: []string{"sne.i $1, $2", "dat.f $1, #2", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+		{
+			input:  []string{"sne.i $1, $2", "dat.f $1, $1", "dat.f $1, $2"},
+			output: []string{"sne.i $1, $2", "dat.f $1, $1", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{2},
+		},
+
+		// negative cases all modes
+		{
+			input:  []string{"sne.a $1, $2", "dat.f $1, $2", "dat.f $1, $4"},
+			output: []string{"sne.a $1, $2", "dat.f $1, $2", "dat.f $1, $4", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"sne.b $1, $2", "dat.f $1, $2", "dat.f $3, $2"},
+			output: []string{"sne.b $1, $2", "dat.f $1, $2", "dat.f $3, $2", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"sne.ab $1, $2", "dat.f $1, $2", "dat.f $3, $1"},
+			output: []string{"sne.ab $1, $2", "dat.f $1, $2", "dat.f $3, $1", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"sne.ba $1, $2", "dat.f $1, $2", "dat.f $2, $4"},
+			output: []string{"sne.ba $1, $2", "dat.f $1, $2", "dat.f $2, $4", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"sne.f $1, $2", "dat.f $1, $2", "dat.f $1, #2"},
+			output: []string{"sne.f $1, $2", "dat.f $1, $2", "dat.f $1, #2", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"sne.x $1, $2", "dat.f $1, $2", "dat.f $2, #1"},
+			output: []string{"sne.x $1, $2", "dat.f $1, $2", "dat.f $2, #1", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+		{
+			input:  []string{"sne.i $1, $2", "dat.f $1, $2", "dat.f $1, $2"},
+			output: []string{"sne.i $1, $2", "dat.f $1, $2", "dat.f $1, $2", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+	}
+	runTests(t, "seq", tests)
+}
+
 func TestSLT(t *testing.T) {
 	tests := []redcodeTest{
 		// positive cases for all modes
@@ -1064,4 +1519,15 @@ func TestSPL(t *testing.T) {
 		},
 	}
 	runTests(t, "spl", tests)
+}
+
+func TestNOP(t *testing.T) {
+	tests := []redcodeTest{
+		{
+			input:  []string{"nop.b $0, $0"},
+			output: []string{"nop.b $0, $0", "dat.f $0, $0", "dat.f $0, $0", "dat.f $0, $0"},
+			pq:     []Address{1},
+		},
+	}
+	runTests(t, "nop", tests)
 }

@@ -206,6 +206,10 @@ func (s *Simulator) exec(PC Address, pq *processQueue) {
 		s.sub(IR, IRA, IRB, WAB, PC, pq)
 	case MUL:
 		s.mul(IR, IRA, IRB, WAB, PC, pq)
+	case DIV:
+		s.div(IR, IRA, IRB, WAB, PC, pq)
+	case MOD:
+		s.mod(IR, IRA, IRB, WAB, PC, pq)
 	case JMP:
 		pq.Push(RAB)
 	case JMZ:
@@ -215,12 +219,18 @@ func (s *Simulator) exec(PC Address, pq *processQueue) {
 	case DJN:
 		s.djn(IR, IRB, RAB, WAB, PC, pq)
 	case CMP:
+		fallthrough
+	case SEQ:
 		s.cmp(IR, IRA, IRB, PC, pq)
 	case SLT:
 		s.slt(IR, IRA, IRB, PC, pq)
+	case SNE:
+		s.sne(IR, IRA, IRB, PC, pq)
 	case SPL:
 		pq.Push((PC + 1) % s.m)
 		pq.Push(RAB)
+	case NOP:
+		pq.Push((PC + 1) % s.m)
 	}
 }
 

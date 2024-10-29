@@ -88,6 +88,110 @@ func (s *Simulator) mul(IR, IRA, IRB Instruction, WAB, PC Address, pq *processQu
 	pq.Push((PC + 1) % s.m)
 }
 
+func (s *Simulator) div(IR, IRA, IRB Instruction, WAB, PC Address, pq *processQueue) {
+	switch IR.OpMode {
+	case A:
+		if IRA.A != 0 {
+			s.mem[WAB].A = IRB.A / IRA.A
+		} else {
+			return
+		}
+	case B:
+		if IRA.B != 0 {
+			s.mem[WAB].B = IRB.B / IRA.B
+		} else {
+			return
+		}
+	case AB:
+		if IRA.A != 0 {
+			s.mem[WAB].B = IRB.B / IRA.A
+		} else {
+			return
+		}
+	case BA:
+		if IRA.B != 0 {
+			s.mem[WAB].A = IRB.A / IRA.B
+		} else {
+			return
+		}
+	case F:
+		fallthrough
+	case I:
+		if IRA.A != 0 {
+			s.mem[WAB].A = IRB.A / IRA.A
+		}
+		if IRA.B != 0 {
+			s.mem[WAB].B = IRB.B / IRA.B
+		}
+		if IRA.A == 0 || IRA.B == 0 {
+			return
+		}
+	case X:
+		if IRA.A != 0 {
+			s.mem[WAB].B = IRB.B / IRA.A
+		}
+		if IRA.B != 0 {
+			s.mem[WAB].A = IRB.A / IRA.B
+		}
+		if IRA.A == 0 || IRA.B == 0 {
+			return
+		}
+	}
+	pq.Push((PC + 1) % s.m)
+}
+
+func (s *Simulator) mod(IR, IRA, IRB Instruction, WAB, PC Address, pq *processQueue) {
+	switch IR.OpMode {
+	case A:
+		if IRA.A != 0 {
+			s.mem[WAB].A = IRB.A % IRA.A
+		} else {
+			return
+		}
+	case B:
+		if IRA.B != 0 {
+			s.mem[WAB].B = IRB.B % IRA.B
+		} else {
+			return
+		}
+	case AB:
+		if IRA.A != 0 {
+			s.mem[WAB].B = IRB.B % IRA.A
+		} else {
+			return
+		}
+	case BA:
+		if IRA.B != 0 {
+			s.mem[WAB].A = IRB.A % IRA.B
+		} else {
+			return
+		}
+	case F:
+		fallthrough
+	case I:
+		if IRA.A != 0 {
+			s.mem[WAB].A = IRB.A % IRA.A
+		}
+		if IRA.B != 0 {
+			s.mem[WAB].B = IRB.B % IRA.B
+		}
+		if IRA.A == 0 || IRA.B == 0 {
+			return
+		}
+	case X:
+		if IRA.A != 0 {
+			s.mem[WAB].B = IRB.B % IRA.A
+		}
+		if IRA.B != 0 {
+			s.mem[WAB].A = IRB.A % IRA.B
+		}
+		if IRA.A == 0 || IRA.B == 0 {
+			return
+		}
+	}
+	pq.Push((PC + 1) % s.m)
+}
+
 func (s *Simulator) jmz(IR, IRB Instruction, RAB, PC Address, pq *processQueue) {
 	switch IR.OpMode {
 	case A:
@@ -231,6 +335,55 @@ func (s *Simulator) cmp(IR, IRA, IRB Instruction, PC Address, pq *processQueue) 
 		if IRA.Op == IRB.Op && IRA.OpMode == IRB.OpMode &&
 			IRA.AMode == IRB.AMode && IRA.A == IRB.A &&
 			IRA.BMode == IRB.BMode && IRA.B == IRB.B {
+			pq.Push((PC + 2) % s.m)
+		} else {
+			pq.Push((PC + 1) % s.m)
+		}
+	}
+}
+
+func (s *Simulator) sne(IR, IRA, IRB Instruction, PC Address, pq *processQueue) {
+	switch IR.OpMode {
+	case A:
+		if IRA.A != IRB.A {
+			pq.Push((PC + 2) % s.m)
+		} else {
+			pq.Push((PC + 1) % s.m)
+		}
+	case B:
+		if IRA.B != IRB.B {
+			pq.Push((PC + 2) % s.m)
+		} else {
+			pq.Push((PC + 1) % s.m)
+		}
+	case AB:
+		if IRA.A != IRB.B {
+			pq.Push((PC + 2) % s.m)
+		} else {
+			pq.Push((PC + 1) % s.m)
+		}
+	case BA:
+		if IRA.B != IRB.A {
+			pq.Push((PC + 2) % s.m)
+		} else {
+			pq.Push((PC + 1) % s.m)
+		}
+	case F:
+		if IRA.A != IRB.A || IRA.B != IRB.B {
+			pq.Push((PC + 2) % s.m)
+		} else {
+			pq.Push((PC + 1) % s.m)
+		}
+	case X:
+		if IRA.A != IRB.B || IRA.B != IRB.A {
+			pq.Push((PC + 2) % s.m)
+		} else {
+			pq.Push((PC + 1) % s.m)
+		}
+	case I:
+		if IRA.Op != IRB.Op || IRA.OpMode != IRB.OpMode ||
+			IRA.AMode != IRB.AMode || IRA.A != IRB.A ||
+			IRA.BMode != IRB.BMode || IRA.B != IRB.B {
 			pq.Push((PC + 2) % s.m)
 		} else {
 			pq.Push((PC + 1) % s.m)
