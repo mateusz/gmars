@@ -305,7 +305,7 @@ func parseLoadFile94(reader io.Reader, coresize Address) (WarriorData, error) {
 			if err != nil {
 				return WarriorData{}, fmt.Errorf("line %d: error parsing integer: %s", lineNum, err)
 			}
-			if val < 0 || val > int64(len(data.Code)) {
+			if val < 0 {
 				return WarriorData{}, fmt.Errorf("line %d: start address outside warrior code", lineNum)
 			}
 
