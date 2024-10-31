@@ -37,6 +37,25 @@ func getOpCode88(op string) (OpCode, error) {
 	}
 }
 
+func getOp94(op string) (OpCode, OpMode, error) {
+	fields := strings.Split(op, ".")
+	if len(fields) != 2 {
+		return 0, 0, fmt.Errorf("invalid op: '%s'", op)
+	}
+
+	code, err := getOpCode(fields[0])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	opmode, err := getOpMode(fields[1])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return code, opmode, nil
+}
+
 func getOpCode(op string) (OpCode, error) {
 	switch strings.ToLower(op) {
 	case "dat":
@@ -96,6 +115,29 @@ func getOpMode(opModeStr string) (OpMode, error) {
 		return X, nil
 	default:
 		return 0, fmt.Errorf("invalid op mode: '%s'", opModeStr)
+	}
+}
+
+func getAddressMode(modeStr string) (AddressMode, error) {
+	switch modeStr {
+	case "#":
+		return IMMEDIATE, nil
+	case "$":
+		return DIRECT, nil
+	case "*":
+		return A_INDIRECT, nil
+	case "@":
+		return B_INDIRECT, nil
+	case "{":
+		return A_DECREMENT, nil
+	case "<":
+		return B_DECREMENT, nil
+	case "}":
+		return A_INCREMENT, nil
+	case ">":
+		return B_INCREMENT, nil
+	default:
+		return 0, fmt.Errorf("invalid 88 address mode: '%s'", modeStr)
 	}
 }
 
@@ -194,6 +236,126 @@ func getOpModeAndValidate88(Op OpCode, AMode AddressMode, BMode AddressMode) (Op
 		return B, nil
 	}
 	return B, fmt.Errorf("unknown op code: '%s'", Op)
+}
+
+func parseLoadFile94(reader io.Reader, coresize Address) (WarriorData, error) {
+	data := WarriorData{
+		Name:     "Unknown",
+		Author:   "Anonymous",
+		Strategy: "",
+		Code:     make([]Instruction, 0),
+		Start:    0,
+	}
+
+	lineNum := 0
+	breader := bufio.NewReader(reader)
+	for {
+		// empty lines and last lines without newlines seem to be missed
+		// should something else be used? or are these not worth handling?
+		raw_line, err := breader.ReadString('\n')
+		if err != nil {
+			break
+		}
+		lineNum++
+
+		if len(raw_line) == 0 {
+			continue
+		}
+
+		lower := strings.ToLower(raw_line)
+
+		// handle metadata comments
+		if raw_line[0] == ';' {
+			if strings.HasPrefix(lower, ";name") {
+				data.Name = strings.TrimSpace(raw_line[5:])
+			} else if strings.HasPrefix(lower, ";author") {
+				data.Author = strings.TrimSpace(raw_line[7:])
+			} else if strings.HasPrefix(lower, ";strategy") {
+				data.Strategy += raw_line[10:]
+			}
+			continue
+		}
+
+		// trim comments
+		if strings.Contains(lower, ";") {
+			lower = strings.Split(lower, ";")[0]
+		}
+
+		// remove comma before counting fields
+		nocomma := strings.ReplaceAll(lower, ",", " ")
+
+		// split into fields based on whitespace
+		fields := strings.Fields(nocomma)
+
+		// valid instructions need exactly 5 fields
+		// only other option is "ORG" pseudo opcode with exactly 1 arguments
+		if len(fields) != 5 {
+			// empty line
+			if len(fields) == 0 {
+				continue
+			}
+
+			if fields[0] != "org" {
+				return WarriorData{}, fmt.Errorf("line %d: invalid op-code '%s'", lineNum, fields[0])
+			} else if len(fields) != 2 {
+				return WarriorData{}, fmt.Errorf("line %d: 'org' requires 1 argument", lineNum)
+			}
+
+			val, err := strconv.ParseInt(fields[1], 10, 32)
+			if err != nil {
+				return WarriorData{}, fmt.Errorf("line %d: error parsing integer: %s", lineNum, err)
+			}
+			if val < 0 || val > int64(len(data.Code)) {
+				return WarriorData{}, fmt.Errorf("line %d: start address outside warrior code", lineNum)
+			}
+
+			data.Start = int(val)
+			continue
+		}
+
+		// comma is ignored, but required
+		if !strings.Contains(lower, ",") {
+			return WarriorData{}, fmt.Errorf("line %d: missing comma", lineNum)
+		}
+
+		op, opmode, err := getOp94(fields[0])
+		if err != nil {
+			return WarriorData{}, fmt.Errorf("line %d: %s", lineNum, err)
+		}
+
+		amode, err := getAddressMode(fields[1])
+		if err != nil {
+			return WarriorData{}, fmt.Errorf("line %d: %s", lineNum, err)
+		}
+		aval, err := parseAddress(fields[2], coresize)
+		if err != nil {
+			return WarriorData{}, fmt.Errorf("line %d: error parsing a field integer: %s", lineNum, err)
+		}
+
+		bmode, err := getAddressMode(fields[3])
+		if err != nil {
+			return WarriorData{}, fmt.Errorf("line %d: %s", lineNum, err)
+		}
+		bval, err := parseAddress(fields[4], coresize)
+		if err != nil {
+			return WarriorData{}, fmt.Errorf("line %d: error parsing b field integer: %s", lineNum, err)
+		}
+
+		data.Code = append(data.Code, Instruction{
+			Op:     op,
+			OpMode: opmode,
+			AMode:  amode,
+			A:      aval,
+			BMode:  bmode,
+			B:      bval,
+		})
+
+	}
+	if data.Start >= len(data.Code) {
+		return WarriorData{}, fmt.Errorf("invalid start position")
+	}
+
+	return data, nil
 }
 
 func parse88LoadFile(reader io.Reader, coresize Address) (WarriorData, error) {
@@ -324,8 +486,8 @@ func parse88LoadFile(reader io.Reader, coresize Address) (WarriorData, error) {
 }
 
 func ParseLoadFile(reader io.Reader, simConfig SimulatorConfig) (WarriorData, error) {
-	if simConfig.Mode != ICWS88 {
-		return WarriorData{}, fmt.Errorf("not implemented")
+	if simConfig.Mode == ICWS88 {
+		return parse88LoadFile(reader, simConfig.CoreSize)
 	}
-	return parse88LoadFile(reader, simConfig.CoreSize)
+	return parseLoadFile94(reader, simConfig.CoreSize)
 }
