@@ -1,5 +1,7 @@
 package mars
 
+import "fmt"
+
 type WarriorIndex uint32
 type Address uint32
 type OpCode uint8
@@ -21,6 +23,23 @@ type Instruction struct {
 	AMode  AddressMode
 	B      Address
 	BMode  AddressMode
+}
+
+func (i Instruction) String() string {
+	return fmt.Sprintf("%s.%-2s %s %5d %s %5d", i.Op, i.OpMode, i.AMode, i.A, i.BMode, i.B)
+}
+
+func signedAddress(a, coresize Address) int {
+	if a > (coresize / 2) {
+		return -(int(coresize) - int(a))
+	}
+	return int(a)
+}
+
+func (i Instruction) NormString(coresize Address) string {
+	anorm := signedAddress(i.A, coresize)
+	bnorm := signedAddress(i.B, coresize)
+	return fmt.Sprintf("%s.%-2s %s %5d %s %5d", i.Op, i.OpMode, i.AMode, anorm, i.BMode, bnorm)
 }
 
 const (
@@ -55,8 +74,24 @@ func (o OpCode) String() string {
 		return "SUB"
 	case MUL:
 		return "MUL"
+	case CMP:
+		return "CMP"
+	case SEQ:
+		return "SEQ"
+	case SNE:
+		return "SNE"
+	case SLT:
+		return "SLT"
 	case JMP:
 		return "JMP"
+	case JMN:
+		return "JMN"
+	case JMZ:
+		return "JMZ"
+	case DJN:
+		return "DJN"
+	case SPL:
+		return "SPL"
 	}
 	return "___"
 }
@@ -108,10 +143,18 @@ func (am AddressMode) String() string {
 		return "#"
 	case DIRECT:
 		return "$"
+	case A_INDIRECT:
+		return "*"
 	case B_INDIRECT:
 		return "@"
+	case A_DECREMENT:
+		return "{"
 	case B_DECREMENT:
 		return "<"
+	case A_INCREMENT:
+		return "}"
+	case B_INCREMENT:
+		return ">"
 	}
 	return "_"
 }

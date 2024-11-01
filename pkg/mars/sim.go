@@ -85,6 +85,10 @@ func (s *Simulator) CycleCount() Address {
 	return s.cycleCount
 }
 
+func (s *Simulator) AddReporter(r Reporter) {
+	s.reporters = append(s.reporters, r)
+}
+
 func (s *Simulator) addressSigned(a Address) int {
 	if a > (s.m / 2) {
 		return -(int(s.m) - int(a))
@@ -93,7 +97,9 @@ func (s *Simulator) addressSigned(a Address) int {
 }
 
 func (s *Simulator) SpawnWarrior(data *WarriorData, startOffset Address) (*Warrior, error) {
-
+	for _, r := range s.reporters {
+		r.WarriorSpawn(len(s.warriors), startOffset, startOffset+Address(data.Start))
+	}
 	w := &Warrior{
 		data: data.Copy(),
 		sim:  s,
@@ -109,10 +115,6 @@ func (s *Simulator) SpawnWarrior(data *WarriorData, startOffset Address) (*Warri
 	w.pq.Push(startOffset + Address(data.Start))
 	w.state = ALIVE
 
-	for _, r := range s.reporters {
-		r.WarriorSpawn(len(s.warriors), startOffset, startOffset+Address(w.data.Start))
-	}
-
 	return w, nil
 }
 
@@ -121,7 +123,11 @@ func (s *Simulator) SpawnWarrior(data *WarriorData, startOffset Address) (*Warri
 func (s *Simulator) RunCycle() int {
 	nAlive := 0
 
-	for _, warrior := range s.warriors {
+	for _, r := range s.reporters {
+		r.TurnStart(int(s.cycleCount))
+	}
+
+	for i, warrior := range s.warriors {
 		if warrior.state != ALIVE {
 			continue
 		}
@@ -130,6 +136,10 @@ func (s *Simulator) RunCycle() int {
 		if err != nil {
 			warrior.state = DEAD
 			continue
+		}
+
+		for _, r := range s.reporters {
+			r.WarriorTaskPop(i, pc)
 		}
 
 		s.exec(pc, warrior.pq)
@@ -147,7 +157,7 @@ func (s *Simulator) RunCycle() int {
 
 func (s *Simulator) readFold(pointer Address) Address {
 	res := pointer % s.readLimit
-	if res < (s.readLimit / 2) {
+	if res > (s.readLimit / 2) {
 		res += (s.m - s.readLimit)
 	}
 	return res
@@ -155,7 +165,7 @@ func (s *Simulator) readFold(pointer Address) Address {
 
 func (s *Simulator) writeFold(pointer Address) Address {
 	res := pointer % s.writeLimit
-	if res < (s.writeLimit / 2) {
+	if res > (s.writeLimit / 2) {
 		res += (s.m - s.writeLimit)
 	}
 	return res
@@ -218,12 +228,12 @@ func (s *Simulator) exec(PC Address, pq *processQueue) {
 		s.mem[PIP].B = (s.mem[PIP].B + 1) % s.m
 	}
 
-	// prepare A indirect references and decrement or save increment pointer
+	// prepare B indirect references and decrement or save increment pointer
 	if IR.BMode != IMMEDIATE {
 		RPB = s.readFold(IR.B)
 		WPB = s.writeFold(IR.B)
 
-		if IR.BMode == A_INCREMENT || IR.BMode == A_DECREMENT || IR.BMode == B_INCREMENT {
+		if IR.BMode == A_INDIRECT || IR.BMode == A_DECREMENT || IR.BMode == A_INCREMENT {
 			if IR.BMode == A_DECREMENT {
 				dptr := (PC + WPB) % s.m
 				s.mem[dptr].A = (s.mem[dptr].A + s.m - 1) % s.m
