@@ -295,6 +295,11 @@ func parseLoadFile94(reader io.Reader, coresize Address) (WarriorData, error) {
 				continue
 			}
 
+			// accept end and break
+			if len(fields) == 1 && fields[0] == "end" {
+				break
+			}
+
 			if fields[0] != "org" {
 				return WarriorData{}, fmt.Errorf("line %d: invalid op-code '%s'", lineNum, fields[0])
 			} else if len(fields) != 2 {
@@ -351,6 +356,7 @@ func parseLoadFile94(reader io.Reader, coresize Address) (WarriorData, error) {
 		})
 
 	}
+
 	if data.Start >= len(data.Code) {
 		return WarriorData{}, fmt.Errorf("invalid start position")
 	}
@@ -415,7 +421,7 @@ func parse88LoadFile(reader io.Reader, coresize Address) (WarriorData, error) {
 				continue
 			}
 
-			if fields[0] != "end" {
+			if fields[0] != "end" && fields[0] != "org" {
 				return WarriorData{}, fmt.Errorf("line %d: invalid op-code '%s'", lineNum, fields[0])
 			} else if len(fields) > 2 {
 				return WarriorData{}, fmt.Errorf("line %d: too many arguments to 'end'", lineNum)
@@ -430,12 +436,15 @@ func parse88LoadFile(reader io.Reader, coresize Address) (WarriorData, error) {
 			if err != nil {
 				return WarriorData{}, fmt.Errorf("line %d: error parsing integer: %s", lineNum, err)
 			}
-			if val < 0 || val > int64(len(data.Code)) {
+			if fields[0] != "org" && (val < 0 || val > int64(len(data.Code))) {
 				return WarriorData{}, fmt.Errorf("line %d: start address outside warrior code", lineNum)
 			}
 
 			data.Start = int(val)
-			break
+
+			if fields[0] == "end" {
+				break
+			}
 		}
 
 		// comma is ignored, but required
@@ -482,6 +491,12 @@ func parse88LoadFile(reader io.Reader, coresize Address) (WarriorData, error) {
 		})
 
 	}
+
+	if data.Start != 0 && data.Start >= len(data.Code) {
+		fmt.Println(data.Start, len(data.Code))
+		return WarriorData{}, fmt.Errorf("invalid start position")
+	}
+
 	return data, nil
 }
 

@@ -199,6 +199,8 @@ func (s *Simulator) exec(PC Address, pq *processQueue) {
 			}
 
 			RPA = s.readFold(RPA + s.mem[(PC+RPA)%s.m].A)
+			// not used, but should be updated here if it were to be
+			// WPA = s.writeFold(WPA + s.mem[(PC+WPA)%s.m].A)
 		}
 
 		if IR.AMode == B_INDIRECT || IR.AMode == B_DECREMENT || IR.AMode == B_INCREMENT {
@@ -212,6 +214,7 @@ func (s *Simulator) exec(PC Address, pq *processQueue) {
 			}
 
 			RPA = s.readFold(RPA + s.mem[(PC+RPA)%s.m].B)
+			// not used, but should be updated here if it were to be
 			// WPA = s.writeFold(WPA + s.mem[(PC+WPA)%s.m].B)
 		}
 
