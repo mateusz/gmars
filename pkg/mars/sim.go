@@ -1,5 +1,13 @@
 package mars
 
+type SimulatorMode uint8
+
+const (
+	ICWS88 SimulatorMode = iota
+	NOP94
+	ICWS94
+)
+
 type Simulator struct {
 	m          Address
 	maxProcs   Address
