@@ -40,7 +40,7 @@ applications for educational and analytical purposes.
 - Interactive debugger
 - GUI with interactive controls
 
-## Testing Status / Known Bugs
+### Testing Status / Known Bugs
 
 > TL;DR: One warrior out of 1695 tested has divergent behavior from pMARS
 > detected and I am searching for the issue.
@@ -50,7 +50,7 @@ To test for errors I used the 88 and 94nop hills from
 fixed starting positions to compare the output to pMARS and other
 implementations.
 
-### Results
+#### Results
 
 The '88 hill has 658 warriors and all tested combinations / starting position
 results matched.
