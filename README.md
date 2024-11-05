@@ -22,19 +22,7 @@ information about Core War see:
    and report results.
 - The `pkg/mars` exports a public API for running MARS simulations.
 
-## Project Status
-
-This project is still a work in progress, but the core simulator is functional,
-tested, and mostly bug free. gMARS does include a CLI client, but is implemented
-as a library, with generic reporting hooks to be used by other software to
-implement Graphical User Interface and/or analysis software.
-
-While I do plan to optimize the code as much as possible, there is no goal to
-compete with the many optimized C/C++ implementations on raw performance. This
-project is more focused on readability and a stable API for creating interactive
-applications for educational and analytical purposes.
-
-### Implemented Features
+## Implemented Features
 
 - Load code (compiled assembly) warrior loading for ICWS'88 and '94 standards
    (without p-space)
@@ -42,14 +30,14 @@ applications for educational and analytical purposes.
 - Read/write limits (implemented, but not thoroughly tested)
 - Hooks generating updates for visualization and analysis
 
-### Planned Features
+## Planned Features
 
 - P-Space support
 - Parsing and linking of full '94 assembly spec (and pMARS compatibility)
 - Interactive debugger
 - GUI with interactive controls
 
-### Testing Status / Known Bugs
+## Testing Status / Known Bugs
 
 > TL;DR: One warrior out of 1695 tested has divergent behavior from pMARS
 > detected and I am searching for the issue.
@@ -59,7 +47,7 @@ To test for errors I used the 88 and 94nop hills from
 fixed starting positions to compare the output to pMARS and other
 implementations.
 
-#### Results
+## Results
 
 The '88 hill has 658 warriors and all tested combinations / starting position
 results matched.
