@@ -1,6 +1,7 @@
 # gMARS
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/bobertlo/gmars/pkg/mars.svg)](https://pkg.go.dev/github.com/bobertlo/gmars/pkg/mars)
+[![Go
+Reference](https://pkg.go.dev/badge/github.com/bobertlo/gmars/pkg/mars.svg)](https://pkg.go.dev/github.com/bobertlo/gmars/pkg/mars)
 
 gMARS is an implementation of a Memory Array Redcode Simulator (MARS) written in
 Go. The MARS simulator is used to play the game Core War, in which two or more
@@ -14,6 +15,12 @@ information about Core War see:
 - [Koenigstuhl](https://asdflkj.net/COREWAR/koenigstuhl.html): An 'infinite
    hill' site that collects warriors and publishes their rankings and source
    code.
+
+## Components
+
+- The `cmd/gmars` command implements a command line interface to run simulations
+   and report results.
+- The `pkg/mars` exports a public API for running MARS simulations.
 
 ## Project Status
 
