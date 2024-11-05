@@ -7,10 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func makeSim88() Simulator {
-	return NewSimulator(NewQuickConfig(ICWS88, 8000, 8000, 80000, 100))
-}
-
 func TestImp(t *testing.T) {
 	tests := []redcodeTest{
 		{
@@ -55,8 +51,11 @@ func TestRunImp(t *testing.T) {
 	impdata, err := ParseLoadFile(reader, config)
 	require.NoError(t, err)
 
-	sim := NewSimulator(config)
-	w, err := sim.SpawnWarrior(&impdata, 0)
+	sim, err := NewSimulator(config)
+	require.NoError(t, err)
+	w, err := sim.AddWarrior(&impdata)
+	require.NoError(t, err)
+	err = sim.SpawnWarrior(0, 0)
 	require.NoError(t, err)
 
 	state := sim.Run()
@@ -72,10 +71,15 @@ func TestRunTwoImps(t *testing.T) {
 	impdata, err := ParseLoadFile(reader, config)
 	require.NoError(t, err)
 
-	sim := NewSimulator(config)
-	w, err := sim.SpawnWarrior(&impdata, 0)
+	sim, err := NewSimulator(config)
 	require.NoError(t, err)
-	w2, err := sim.SpawnWarrior(&impdata, 200)
+	w, err := sim.AddWarrior(&impdata)
+	require.NoError(t, err)
+	err = sim.SpawnWarrior(0, 0)
+	require.NoError(t, err)
+	w2, err := sim.AddWarrior(&impdata)
+	require.NoError(t, err)
+	err = sim.SpawnWarrior(1, 200)
 	require.NoError(t, err)
 
 	state := sim.Run()

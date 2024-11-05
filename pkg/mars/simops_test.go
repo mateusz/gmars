@@ -22,13 +22,17 @@ type redcodeTest struct {
 }
 
 func TestFold(t *testing.T) {
-	sim := newReportSim(SimulatorConfig{
+	sim, err := newReportSim(SimulatorConfig{
 		Mode:       NOP94,
 		CoreSize:   8000,
+		Processes:  8000,
+		Cycles:     80000,
 		ReadLimit:  8000,
 		WriteLimit: 8000,
 		Length:     100,
+		Distance:   100,
 	})
+	require.NoError(t, err)
 	for i := Address(0); i < 8000; i += 7 {
 		assert.Equal(t, i, sim.readFold(i))
 		assert.Equal(t, i, sim.writeFold(i))
@@ -36,13 +40,17 @@ func TestFold(t *testing.T) {
 }
 
 func TestFoldLimit(t *testing.T) {
-	sim := newReportSim(SimulatorConfig{
+	sim, err := newReportSim(SimulatorConfig{
 		Mode:       NOP94,
 		CoreSize:   8000,
+		Cycles:     80000,
+		Processes:  8000,
 		ReadLimit:  1000,
 		WriteLimit: 1000,
 		Length:     100,
+		Distance:   100,
 	})
+	require.NoError(t, err)
 	assert.Equal(t, Address(400), sim.readFold(1400))
 	assert.Equal(t, Address(400), sim.writeFold(1400))
 	assert.Equal(t, Address(8000-400), sim.readFold(8000-1400))
@@ -156,10 +164,14 @@ func runTests(t *testing.T, set_name string, tests []redcodeTest) {
 			expectedOutput[i] = instruction
 		}
 
-		config := NewQuickConfig(ICWS88, coresize, processes, 1, 100)
+		config := NewQuickConfig(ICWS88, coresize, processes, 1, coresize)
+		config.Distance = 0
 
-		sim := newReportSim(config)
-		w, err := sim.spawnWarrior(&WarriorData{Code: code, Start: int(test.offset)}, test.start)
+		sim, err := newReportSim(config)
+		require.NoError(t, err)
+		w, err := sim.addWarrior(&WarriorData{Code: code, Start: int(test.offset)})
+		require.NoError(t, err)
+		err = sim.spawnWarrior(0, test.start)
 		require.NoError(t, err)
 
 		for i := 0; i < turns; i++ {
