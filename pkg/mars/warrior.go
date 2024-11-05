@@ -6,8 +6,8 @@ type WarriorState uint8
 
 const (
 	WarriorAdded WarriorState = iota
-	warriorAlive
-	warriorDead
+	WarriorAlive
+	WarriorDead
 )
 
 type WarriorData struct {
@@ -69,7 +69,7 @@ func (w *warrior) State() WarriorState {
 
 // Alive returns true if the warrior is alive
 func (w *warrior) Alive() bool {
-	return w.state == warriorAlive
+	return w.state == WarriorAlive
 }
 
 func (w *warrior) ThreadCount() Address {

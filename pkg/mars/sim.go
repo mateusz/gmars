@@ -137,7 +137,7 @@ func (s *reportSim) spawnWarrior(wi int, startOffset Address) error {
 
 	w.pq = newProcessQueue(s.maxProcs)
 	w.pq.Push(startOffset + Address(w.data.Start))
-	w.state = warriorAlive
+	w.state = WarriorAlive
 
 	s.Report(Report{Type: WarriorSpawn, WarriorIndex: w.index, Address: startOffset})
 
@@ -157,7 +157,7 @@ func (s *reportSim) RunCycle() int {
 	// return 0 if no living warriors are found
 	for i := 0; ; i++ {
 		s.warriorIndex = (s.warriorIndex + i) % s.warriorCount
-		if s.warriors[s.warriorIndex].state == warriorAlive {
+		if s.warriors[s.warriorIndex].state == WarriorAlive {
 			warrior = s.warriors[s.warriorIndex]
 
 			// I don't like this, and this should never happen, but we will
@@ -166,7 +166,7 @@ func (s *reportSim) RunCycle() int {
 			var err error
 			pc, err = warrior.pq.Pop()
 			if err != nil {
-				warrior.state = warriorDead
+				warrior.state = WarriorDead
 				continue
 			}
 
@@ -182,7 +182,7 @@ func (s *reportSim) RunCycle() int {
 	s.exec(pc, warrior)
 	if warrior.pq.Len() == 0 {
 		s.Report(Report{Type: WarriorTerminate, Cycle: int(s.cycleCount), WarriorIndex: s.warriorIndex, Address: pc})
-		warrior.state = warriorDead
+		warrior.state = WarriorDead
 	}
 
 	s.Report(Report{Type: CycleEnd, Cycle: int(s.cycleCount)})
@@ -192,7 +192,7 @@ func (s *reportSim) RunCycle() int {
 
 	nAlive := 0
 	for i := 0; i < s.warriorCount; i++ {
-		if s.warriors[i].state == warriorAlive {
+		if s.warriors[i].state == WarriorAlive {
 			nAlive += 1
 		}
 	}
