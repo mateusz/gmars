@@ -7,7 +7,8 @@ import (
 type ReportType uint8
 
 const (
-	CycleStart ReportType = iota
+	SimReset ReportType = iota
+	CycleStart
 	CycleEnd
 	WarriorSpawn
 	WarriorTaskPop
@@ -40,8 +41,12 @@ func NewDebugReporter(s Simulator) Reporter {
 
 func (r *debugReporter) Report(report Report) {
 	switch report.Type {
+	case SimReset:
+		fmt.Printf("Simulator reset\n")
 	case CycleStart:
-		fmt.Printf("Cycle %d\n", r.s.CycleCount())
+		fmt.Printf("%d\n", r.s.CycleCount())
+	case WarriorSpawn:
+		fmt.Printf("w%02d %04d: Warrior Spawn\n", report.WarriorIndex, report.Address)
 	case WarriorTaskPop:
 		fmt.Printf("W%02d %04d: %s\n", report.WarriorIndex, report.Address, r.s.GetMem(report.Address).NormString(r.s.CoreSize()))
 	case WarriorTaskTerminate:

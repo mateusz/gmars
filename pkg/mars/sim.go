@@ -416,6 +416,8 @@ func (s *reportSim) GetMem(a Address) Instruction {
 }
 
 func (s *reportSim) Reset() {
+	s.Report(Report{Type: SimReset})
+
 	for _, warrior := range s.warriors {
 		warrior.state = WarriorAdded
 	}
