@@ -3,10 +3,14 @@
 [![Go
 Reference](https://pkg.go.dev/badge/github.com/bobertlo/gmars/pkg/mars.svg)](https://pkg.go.dev/github.com/bobertlo/gmars/pkg/mars)
 
-gMARS is an implementation of a Memory Array Redcode Simulator (MARS) written in
-Go. The MARS simulator is used to play the game Core War, in which two or more
-virus-like programs fight against each other in core memory. For more
-information about Core War see:
+gMARS is an implementation of a Core War Memory Array Redcode Simulator (MARS)
+written in Go.
+
+![vmars screenshot](screenshot.png)
+
+In the the game of Core War, two virus-like programs written in assembly fight
+against each other in the memory of a Simulator where they are able to write and
+execute new code and modify eachother. For more information about Core War see:
 
 - [corewar.co.uk](https://corewar.co.uk/): John Metcalf's Core War Site with
    tutorials, history, and links.
@@ -18,8 +22,7 @@ information about Core War see:
 
 ## Components
 
-- `cmd/gmars` is a command line interface to run simulations
-   and report results.
+- `cmd/gmars` is a command line interface to run simulations and report results.
 - `cmd/vmars` is a graphical simulator with interactive controls.
 - The `pkg/mars` exports a public API for running MARS simulations.
 
