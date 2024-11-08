@@ -18,8 +18,9 @@ information about Core War see:
 
 ## Components
 
-- The `cmd/gmars` command implements a command line interface to run simulations
+- `cmd/gmars` is a command line interface to run simulations
    and report results.
+- `cmd/vmars` is a graphical simulator with interactive controls.
 - The `pkg/mars` exports a public API for running MARS simulations.
 
 ## Implemented Features
