@@ -2,6 +2,7 @@
 
 [![Go
 Reference](https://pkg.go.dev/badge/github.com/bobertlo/gmars/pkg/mars.svg)](https://pkg.go.dev/github.com/bobertlo/gmars/pkg/mars)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bobertlo/gmars)](https://goreportcard.com/report/github.com/bobertlo/gmars)
 
 gMARS is an implementation of a Core War Memory Array Redcode Simulator (MARS)
 written in Go.
