@@ -12,7 +12,7 @@ const (
 )
 
 // StateRecorder implements a Reporter which records the most recent operation
-// performed each core address and the warrior index associated. The inital
+// performed each core address and the warrior index associated. The initial
 // state of each address is CoreEmpty with a warrior index of -1.
 type StateRecorder struct {
 	sim      ReportingSimulator

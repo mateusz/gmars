@@ -91,7 +91,7 @@ func parseTestAddres(t *testing.T, input string, M int) (AddressMode, Address) {
 
 	val, err := strconv.ParseInt(input, 10, 32)
 	if err != nil {
-		t.Fatalf("error parsing addres: %s", err)
+		t.Fatalf("error parsing address: %s", err)
 	}
 
 	mval := int(val) % M
@@ -351,7 +351,7 @@ func TestMov(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	tests := []redcodeTest{
-		// immidiate a
+		// immediate a
 		{
 			input:  []string{"add.a #2, $1"},
 			output: []string{"add.a #2, $1", "dat.f $2, $0", "dat.f $0, $0", "dat.f $0, $0"},
@@ -880,7 +880,7 @@ func TestJMP(t *testing.T) {
 
 func TestJMZ(t *testing.T) {
 	tests := []redcodeTest{
-		// postive cases all modes
+		// positive cases all modes
 		{
 			input:  []string{"jmz.a $2, $1", "dat.f $0, $1"},
 			output: []string{"jmz.a $2, $1", "dat.f $0, $1", "dat.f $0, $0", "dat.f $0, $0"},

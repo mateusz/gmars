@@ -3,7 +3,7 @@
 //
 // The Simulator interface provides a MARS implemenation for running
 // simulations, and the ReportingSimulator interface adds the Addreporter
-// method to inject Reporter interfaces to recieve callbacks to report state
+// method to inject Reporter interfaces to receive callbacks to report state
 // changes in the simulation.
 //
 // RedCode files are first loaded as WarriorData{} structs, holding the data
