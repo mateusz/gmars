@@ -2,7 +2,8 @@
 
 [![Go
 Reference](https://pkg.go.dev/badge/github.com/bobertlo/gmars/pkg/mars.svg)](https://pkg.go.dev/github.com/bobertlo/gmars/pkg/mars)
-[![Go Report Card](https://goreportcard.com/badge/github.com/bobertlo/gmars)](https://goreportcard.com/report/github.com/bobertlo/gmars)
+[![Go Report
+Card](https://goreportcard.com/badge/github.com/bobertlo/gmars)](https://goreportcard.com/report/github.com/bobertlo/gmars)
 
 gMARS is an implementation of a Core War Memory Array Redcode Simulator (MARS)
 written in Go.
@@ -20,6 +21,43 @@ execute new code and modify eachother. For more information about Core War see:
 - [Koenigstuhl](https://asdflkj.net/COREWAR/koenigstuhl.html): An 'infinite
    hill' site that collects warriors and publishes their rankings and source
    code.
+
+## Running
+
+Currently only two warrior matches are supported. The simulator setting
+arguments are specified the same for the GUI and CLI simulators:
+
+```
+Usage of ./gmars:
+  -8    Enforce ICWS'88 rules
+  -F int
+        fixed position of warrior #2
+  -c int
+        Cycles until tie (default 80000)
+  -debug
+        Dump verbose debug information
+  -l int
+        Max. warrior length (default 100)
+  -p int
+        Max. Processes (default 8000)
+  -r int
+        Rounds to play (default 1)
+  -s int
+        Size of core (default 8000)
+```
+
+## Install
+
+You can use `go install` to build and install the executables from the latest
+release:
+
+```
+# vmars - Visual MARS simulator
+go install github.com/bobertlo/gmars/cmd/vmars@latest
+
+# gmars - command line MARS
+go install github.com/bobertlo/gmars/cmd/gmars@latest
+```
 
 ## Components
 
