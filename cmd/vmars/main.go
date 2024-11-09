@@ -33,6 +33,7 @@ type Game struct {
 	sim       mars.ReportingSimulator
 	rec       mars.StateRecorder
 	running   bool
+	finished  bool
 	speedStep int
 	counter   int
 }
@@ -84,6 +85,7 @@ func (g *Game) handleInput() {
 		g.sim.Reset()
 		g.sim.SpawnWarrior(0, 0)
 		g.sim.SpawnWarrior(1, mars.Address(rand.Intn(7000)+200))
+		g.finished = false
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
 		g.slowDown()
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
@@ -102,8 +104,14 @@ func (g *Game) handleInput() {
 }
 
 func (g *Game) runCycle() {
-	if g.sim.WarriorLivingCount() > 1 {
+	if g.finished {
+		return
+	}
+
+	if g.sim.WarriorLivingCount() > 1 && g.sim.CycleCount() < g.sim.MaxCycles() {
 		g.sim.RunCycle()
+	} else {
+		g.finished = true
 	}
 }
 
@@ -163,7 +171,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// Draw info
 	msg := fmt.Sprintf("FPS: %0.2f", ebiten.ActualTPS())
 	op := &text.DrawOptions{}
-	op.GeoM.Translate(560, 460)
+	op.GeoM.Translate(585, 465)
 	op.ColorScale.ScaleWithColor(color.White)
 	text.Draw(screen, msg, &text.GoTextFace{
 		Source: mplusFaceSource,
@@ -172,13 +180,38 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 	msg = fmt.Sprintf("Cycle: %05d (%dx)", g.sim.CycleCount(), speeds[g.speedStep])
 	op = &text.DrawOptions{}
-	op.GeoM.Translate(30, 460)
+	op.GeoM.Translate(5, 465)
 	op.ColorScale.ScaleWithColor(color.White)
 	text.Draw(screen, msg, &text.GoTextFace{
 		Source: mplusFaceSource,
 		Size:   10,
 	}, op)
 
+	if g.finished {
+		w1a := g.sim.GetWarrior(0).Alive()
+		w2a := g.sim.GetWarrior(1).Alive()
+
+		if w1a || w2a {
+
+			var msg string
+			op = &text.DrawOptions{}
+			op.GeoM.Translate(120, 465)
+			if w1a && w2a {
+				op.ColorScale = scales[0]
+				msg = "tie"
+			} else if w1a {
+				op.ColorScale = scales[1]
+				msg = fmt.Sprintf("%s wins", g.sim.GetWarrior(0).Name())
+			} else if w2a {
+				op.ColorScale = scales[2]
+				msg = fmt.Sprintf("%s wins", g.sim.GetWarrior(1).Name())
+			}
+			text.Draw(screen, msg, &text.GoTextFace{
+				Source: mplusFaceSource,
+				Size:   10,
+			}, op)
+		}
+	}
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {

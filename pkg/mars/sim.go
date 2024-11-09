@@ -21,6 +21,7 @@ const (
 type Simulator interface {
 	CoreSize() Address
 	CycleCount() int
+	MaxCycles() int
 	AddWarrior(data *WarriorData) (Warrior, error)
 	GetWarrior(wi int) Warrior
 	SpawnWarrior(wi int, startOffset Address) error
@@ -98,6 +99,9 @@ func (s *reportSim) CycleCount() int {
 	return int(s.cycleCount)
 }
 
+func (s *reportSim) MaxCycles() int {
+	return int(s.maxCycles)
+}
 func (s *reportSim) AddReporter(r Reporter) {
 	s.reporters = append(s.reporters, r)
 }
