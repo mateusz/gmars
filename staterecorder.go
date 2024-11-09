@@ -16,10 +16,11 @@ const (
 // performed each core address and the warrior index associated. The initial
 // state of each address is CoreEmpty with a warrior index of -1.
 type StateRecorder struct {
-	sim      ReportingSimulator
-	coresize Address
-	color    []int
-	state    []CoreState
+	sim         ReportingSimulator
+	coresize    Address
+	color       []int
+	state       []CoreState
+	recordReads bool
 }
 
 func NewStateRecorder(sim ReportingSimulator) *StateRecorder {
@@ -42,6 +43,10 @@ func NewStateRecorder(sim ReportingSimulator) *StateRecorder {
 
 func (r *StateRecorder) GetMemState(a Address) (CoreState, int) {
 	return r.state[a], r.color[a]
+}
+
+func (r *StateRecorder) SetRecordRead(val bool) {
+	r.recordReads = val
 }
 
 func (r *StateRecorder) reset() {
@@ -71,8 +76,10 @@ func (r *StateRecorder) Report(report Report) {
 		r.color[report.Address] = report.WarriorIndex
 		r.state[report.Address] = CoreWritten
 	case WarriorRead:
-		r.color[report.Address] = report.WarriorIndex
-		r.state[report.Address] = CoreRead
+		if r.recordReads {
+			r.color[report.Address] = report.WarriorIndex
+			r.state[report.Address] = CoreRead
+		}
 	case WarriorIncrement:
 		r.color[report.Address] = report.WarriorIndex
 		r.state[report.Address] = CoreIncremented

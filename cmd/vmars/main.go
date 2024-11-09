@@ -46,7 +46,7 @@ var (
 
 	tilesImage *ebiten.Image
 
-	speeds = []int{-64, -32, -16, -8, -4, -2, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384}
+	speeds = []int{-64, -32, -16, -8, -4, -2, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192}
 )
 
 func init() {
@@ -223,6 +223,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		Size:   10,
 	}, op)
 
+	// draw results if finished
 	if g.finished {
 		w1a := g.sim.GetWarrior(0).Alive()
 		w2a := g.sim.GetWarrior(1).Alive()
@@ -231,7 +232,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 			var msg string
 			op = &text.DrawOptions{}
-			op.GeoM.Translate(120, 465)
+			op.GeoM.Translate(115, 465)
 			if w1a && w2a {
 				op.ColorScale = warriorColors[0]
 				msg = "tie"
@@ -247,7 +248,15 @@ func (g *Game) Draw(screen *ebiten.Image) {
 				Size:   10,
 			}, op)
 		}
+	} else if !g.running {
+		op = &text.DrawOptions{}
+		op.GeoM.Translate(115, 465)
+		text.Draw(screen, "PAUSED", &text.GoTextFace{
+			Source: mplusFaceSource,
+			Size:   10,
+		}, op)
 	}
+
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
@@ -262,6 +271,7 @@ func main() {
 	lenFlag := flag.Int("l", 100, "Max. warrior length")
 	fixedFlag := flag.Int("F", 0, "fixed position of warrior #2")
 	// roundFlag := flag.Int("r", 1, "Rounds to play")
+	showReadFlag := flag.Bool("showread", false, "display reads in the visualizer")
 	debugFlag := flag.Bool("debug", false, "Dump verbose reporting of simulator state")
 	flag.Parse()
 
@@ -318,6 +328,7 @@ func main() {
 		sim.AddReporter(gmars.NewDebugReporter(sim))
 	}
 	rec := gmars.NewStateRecorder(sim)
+	rec.SetRecordRead(*showReadFlag)
 	sim.AddReporter(rec)
 
 	w2start := *fixedFlag

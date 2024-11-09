@@ -59,12 +59,18 @@ arguments
 
 ### Visual MARS Controls
 
+Keyboard controls:
+
 - `Space` to start/pause the simulation
 - `Up/Down` to increase or decrease simulation speed
 - `Left/Right` to stop or step forward one frame of the simulation (at the
    visualizer speed)
 - `R` to reset the simulator with the next starting position
 - `Escape` to quit
+
+Extra Arguments:
+
+- `-showread`: Enable recording and rendering of CoreRead states.
 
 ### CLI MARS
 
