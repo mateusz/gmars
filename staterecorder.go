@@ -9,6 +9,7 @@ const (
 	CoreIncremented
 	CoreDecremented
 	CoreRead
+	CoreTerminated
 )
 
 // StateRecorder implements a Reporter which records the most recent operation
@@ -60,6 +61,9 @@ func (r *StateRecorder) Report(report Report) {
 			r.color[i%r.coresize] = report.WarriorIndex
 			r.state[i%r.coresize] = CoreWritten
 		}
+	case WarriorTaskTerminate:
+		r.color[report.Address] = report.WarriorIndex
+		r.state[report.Address] = CoreTerminated
 	case WarriorTaskPop:
 		r.color[report.Address] = report.WarriorIndex
 		r.state[report.Address] = CoreExecuted
