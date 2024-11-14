@@ -17,19 +17,19 @@ import (
 )
 
 const (
-	screenWidth  = 640
-	screenHeight = 480
+	screenWidth  = 2 * 640
+	screenHeight = 2 * 480
 )
 
 const (
-	tileSize         = 6
+	tileSize         = 15
 	defaultSpeedStep = 6
 )
 
 var (
 	mplusFaceSource *text.GoTextFaceSource
 
-	//go:embed assets/tiles_6.png
+	//go:embed assets/tiles_15.png
 	tiles_png []byte
 
 	tilesImage *ebiten.Image
@@ -116,7 +116,7 @@ func main() {
 	if *debugFlag {
 		sim.AddReporter(gmars.NewDebugReporter(sim))
 	}
-	rec := gmars.NewStateRecorder(sim)
+	rec := gmars.NewStateRecorder(sim, 10)
 	rec.SetRecordRead(*showReadFlag)
 	sim.AddReporter(rec)
 
