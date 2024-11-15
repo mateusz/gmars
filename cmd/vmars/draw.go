@@ -132,10 +132,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			continue
 		}
 
-		valDecr := 0.7 / float64(len(w.Queue()))
+		valDecr := 0.9 / float64(len(w.Queue()))
 		val := 1.0
 		for _, pc := range w.Queue()[1:] {
-			g.BlitSpriteSV(screen, SpriteHead, pc, i, val, val)
+			g.BlitSpriteAlpha(screen, SpriteHead, pc, i, float32(val*val))
 			val -= valDecr
 		}
 

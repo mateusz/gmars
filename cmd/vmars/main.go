@@ -21,14 +21,14 @@ const (
 )
 
 const (
-	tileSize         = 15
+	tileSize         = 30
 	defaultSpeedStep = 6
 )
 
 var (
 	mplusFaceSource *text.GoTextFaceSource
 
-	//go:embed assets/tiles_15.png
+	//go:embed assets/tiles_30.png
 	tiles_png []byte
 
 	tilesImage *ebiten.Image
