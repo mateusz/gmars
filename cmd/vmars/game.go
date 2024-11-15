@@ -2,15 +2,15 @@ package main
 
 import (
 	"errors"
-	"math/rand"
 
 	"github.com/bobertlo/gmars"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-func NewGame(sim gmars.ReportingSimulator, rec *gmars.StateRecorder, defaultSpeedStep int) *Game {
+func NewGame(config gmars.SimulatorConfig, sim gmars.ReportingSimulator, rec *gmars.StateRecorder, defaultSpeedStep int) *Game {
 	game := &Game{
+		config:    config,
 		sim:       sim,
 		rec:       *rec,
 		speedStep: defaultSpeedStep,
@@ -21,6 +21,7 @@ func NewGame(sim gmars.ReportingSimulator, rec *gmars.StateRecorder, defaultSpee
 }
 
 type Game struct {
+	config      gmars.SimulatorConfig
 	sim         gmars.ReportingSimulator
 	rec         gmars.StateRecorder
 	running     bool
@@ -53,9 +54,10 @@ func (g *Game) handleInput() {
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		g.running = !g.running
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyR) {
+		w2Start := g.config.GetW2Start()
 		g.sim.Reset()
 		g.sim.SpawnWarrior(0, 0)
-		g.sim.SpawnWarrior(1, gmars.Address(rand.Intn(7000)+200))
+		g.sim.SpawnWarrior(1, w2Start)
 		g.finished = false
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
 		g.slowDown()

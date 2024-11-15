@@ -1,6 +1,8 @@
 package gmars
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type SimulatorMode uint8
 
