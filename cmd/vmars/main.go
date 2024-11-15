@@ -134,11 +134,7 @@ func main() {
 	sim.SpawnWarrior(0, 0)
 	sim.SpawnWarrior(1, gmars.Address(w2start))
 
-	game := &Game{
-		sim:       sim,
-		rec:       *rec,
-		speedStep: defaultSpeedStep,
-	}
+	game := NewGame(sim, rec, defaultSpeedStep)
 
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle(fmt.Sprintf("gMARS - '%s' vs '%s'", w1data.Name, w2data.Name))

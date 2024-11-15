@@ -23,34 +23,45 @@ const (
 	SpriteTowerAlone
 	SpriteHead
 	SpriteHeadActive
+	SpriteLast
 )
 const xCount = screenWidth / tileSize
+
+func (g *Game) precomputeSprites() {
+	g.spriteCache = make([]*ebiten.Image, SpriteLast)
+	sprnum := SpriteBackground
+
+	tileXCount := tilesImage.Bounds().Dx() / tileSize
+	for y := 0; y < tileXCount; y++ {
+		for x := 0; x < tileXCount; x++ {
+			sx := x * tileSize
+			sy := y * tileSize
+			rect := image.Rect(sx, sy, sx+tileSize, sy+tileSize)
+
+			subImage := tilesImage.SubImage(rect).(*ebiten.Image)
+			g.spriteCache[sprnum] = subImage
+
+			sprnum++
+			if sprnum >= SpriteLast {
+				goto stop
+			}
+		}
+	}
+stop:
+}
 
 func (g *Game) BlitSpriteWithHue(screen *ebiten.Image, sprnum int, a gmars.Address, hue, sat, val float64) {
 	var c colorm.ColorM
 	c.ChangeHSV(hue, sat, val)
-
-	w := tilesImage.Bounds().Dx()
-	tileXCount := w / tileSize
-
 	op := &colorm.DrawImageOptions{}
 	op.GeoM.Translate(float64((a%xCount)*tileSize), float64((a/xCount)*tileSize))
-
-	sx := (sprnum % tileXCount) * tileSize
-	sy := (sprnum / tileXCount) * tileSize
-	colorm.DrawImage(screen, tilesImage.SubImage(image.Rect(sx, sy, sx+tileSize, sy+tileSize)).(*ebiten.Image), c, op)
+	colorm.DrawImage(screen, g.spriteCache[sprnum], c, op)
 }
 
 func (g *Game) BlitSprite(screen *ebiten.Image, sprnum int, a gmars.Address) {
-	w := tilesImage.Bounds().Dx()
-	tileXCount := w / tileSize
-
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(float64((a%xCount)*tileSize), float64((a/xCount)*tileSize))
-
-	sx := (sprnum % tileXCount) * tileSize
-	sy := (sprnum / tileXCount) * tileSize
-	screen.DrawImage(tilesImage.SubImage(image.Rect(sx, sy, sx+tileSize, sy+tileSize)).(*ebiten.Image), op)
+	screen.DrawImage(g.spriteCache[sprnum], op)
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
@@ -71,7 +82,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	}
 
 	wc := g.sim.WarriorCount()
-	// Evenly divide the hue circle to spread out the warriors
 	hueIncr := (2 * math.Pi) / float64(wc)
 	hue := 2 * math.Pi / 4.0
 	for i := 0; i < int(wc); i++ {
@@ -80,8 +90,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			continue
 		}
 
-		// Evenly divide available color value to evenly spread the queue.
-		// The upcoming PC is first.
 		valDecr := 1.0 / float64(len(w.Queue()))
 		val := 1.0
 		for _, pc := range w.Queue()[1:] {
@@ -93,7 +101,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		g.BlitSpriteWithHue(screen, SpriteHeadActive, pc, hue, 1.0, 1.0)
 
 		hue += hueIncr
-
 	}
 
 	// Draw info

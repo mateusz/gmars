@@ -9,13 +9,24 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
+func NewGame(sim gmars.ReportingSimulator, rec *gmars.StateRecorder, defaultSpeedStep int) *Game {
+	game := &Game{
+		sim:       sim,
+		rec:       *rec,
+		speedStep: defaultSpeedStep,
+	}
+	game.precomputeSprites()
+	return game
+}
+
 type Game struct {
-	sim       gmars.ReportingSimulator
-	rec       gmars.StateRecorder
-	running   bool
-	finished  bool
-	speedStep int
-	counter   int
+	sim         gmars.ReportingSimulator
+	rec         gmars.StateRecorder
+	running     bool
+	finished    bool
+	speedStep   int
+	counter     int
+	spriteCache []*ebiten.Image
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
