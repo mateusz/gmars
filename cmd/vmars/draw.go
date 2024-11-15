@@ -23,12 +23,14 @@ const (
 	SpriteTowerAlone
 	SpriteHead
 	SpriteHeadActive
+	SpriteEye
 	SpriteLast
 )
+
 const xCount = screenWidth / tileSize
 
 func (g *Game) precomputeSprites() {
-	g.spriteCache = make([]*ebiten.Image, SpriteLast)
+	g.spriteCache = make([][]*ebiten.Image, SpriteLast)
 	sprnum := SpriteBackground
 
 	tileXCount := tilesImage.Bounds().Dx() / tileSize
@@ -39,7 +41,14 @@ func (g *Game) precomputeSprites() {
 			rect := image.Rect(sx, sy, sx+tileSize, sy+tileSize)
 
 			subImage := tilesImage.SubImage(rect).(*ebiten.Image)
-			g.spriteCache[sprnum] = subImage
+
+			g.spriteCache[sprnum] = make([]*ebiten.Image, len(g.hues))
+			for i, hue := range g.hues {
+				var c colorm.ColorM
+				c.ChangeHSV(hue/180.0*math.Pi, 1.0, 1.0)
+				g.spriteCache[sprnum][i] = ebiten.NewImage(tileSize, tileSize)
+				colorm.DrawImage(g.spriteCache[sprnum][i], subImage, c, nil)
+			}
 
 			sprnum++
 			if sprnum >= SpriteLast {
@@ -50,57 +59,88 @@ func (g *Game) precomputeSprites() {
 stop:
 }
 
-func (g *Game) BlitSpriteWithHue(screen *ebiten.Image, sprnum int, a gmars.Address, hue, sat, val float64) {
+func (g *Game) BlitSpriteSV(screen *ebiten.Image, sprnum int, a gmars.Address, hue int, sat, val float64) {
+	var offsetY float64
+	if sprnum != SpriteHead && sprnum != SpriteHeadActive {
+		offsetY = tileSize / 3.0
+	}
 	var c colorm.ColorM
-	c.ChangeHSV(hue, sat, val)
+	c.ChangeHSV(0.0, sat, val)
 	op := &colorm.DrawImageOptions{}
-	op.GeoM.Translate(float64((a%xCount)*tileSize), float64((a/xCount)*tileSize))
-	colorm.DrawImage(screen, g.spriteCache[sprnum], c, op)
+	op.GeoM.Translate(float64((a%xCount)*tileSize), float64((a/xCount)*tileSize)+offsetY)
+	colorm.DrawImage(screen, g.spriteCache[sprnum][hue], c, op)
 }
 
-func (g *Game) BlitSprite(screen *ebiten.Image, sprnum int, a gmars.Address) {
+func (g *Game) BlitSpriteAlpha(screen *ebiten.Image, sprnum int, a gmars.Address, hue int, alpha float32) {
+	var offsetY float64
+	if sprnum != SpriteHead && sprnum != SpriteHeadActive {
+		offsetY = tileSize / 3.0
+	}
+	var scale ebiten.ColorScale
+	scale.ScaleAlpha(alpha)
+	op := &ebiten.DrawImageOptions{ColorScale: scale}
+	op.GeoM.Translate(float64((a%xCount)*tileSize), float64((a/xCount)*tileSize)+offsetY)
+	screen.DrawImage(g.spriteCache[sprnum][hue], op)
+}
+
+func (g *Game) BlitSprite(screen *ebiten.Image, sprnum int, a gmars.Address, hue int) {
+	var offsetY float64
+	if sprnum != SpriteHead && sprnum != SpriteHeadActive {
+		offsetY = tileSize / 3.0
+	}
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(float64((a%xCount)*tileSize), float64((a/xCount)*tileSize))
-	screen.DrawImage(g.spriteCache[sprnum], op)
+	op.GeoM.Translate(float64((a%xCount)*tileSize), float64((a/xCount)*tileSize)+offsetY)
+	screen.DrawImage(g.spriteCache[sprnum][hue], op)
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	for i := 0; i < int(g.sim.CoreSize()); i++ {
 		a := gmars.Address(i)
-		state, _ := g.rec.GetMemState(gmars.Address(i))
-		if state == gmars.CoreRead {
-			g.BlitSprite(screen, SpriteShelfFull, a)
-		} else if state == gmars.CoreWritten {
-			g.BlitSprite(screen, SpriteShelfEmpty, a)
-		} else if state == gmars.CoreExecuted {
-			g.BlitSprite(screen, SpriteTowerAlone, a)
-		} else if state == gmars.CoreDecremented {
-			g.BlitSprite(screen, SpriteTrap, a)
-		} else if state == gmars.CoreIncremented {
-			g.BlitSprite(screen, SpriteTrap, a)
+		mem := g.sim.GetMem(a)
+		curState, curWar := g.rec.GetMemState(gmars.Address(i))
+		prevState, prevWar := g.rec.GetMemStateN(gmars.Address(i), 1)
+
+		if curState == gmars.CoreWritten && mem.Op == gmars.DAT {
+			g.BlitSprite(screen, SpriteShelfEmpty, a, curWar)
+		} else if curState == gmars.CoreWritten && mem.Op != gmars.DAT {
+			g.BlitSprite(screen, SpriteTowerAlone, a, curWar)
+		} else if curState == gmars.CoreRead && prevState == gmars.CoreWritten && prevWar == curWar {
+			g.BlitSprite(screen, SpriteShelfFull, a, curWar)
+		} else if curState == gmars.CoreRead && prevState == gmars.CoreRead && prevWar == curWar {
+			g.BlitSprite(screen, SpriteShelfFull, a, curWar)
+		} else if curState == gmars.CoreRead && prevState == gmars.CoreExecuted && prevWar == curWar {
+			g.BlitSprite(screen, SpriteShelfFull, a, curWar)
+		} else if curState == gmars.CoreRead && prevState == gmars.CoreIncremented && prevWar == curWar {
+			g.BlitSprite(screen, SpriteShelfFull, a, curWar)
+		} else if curState == gmars.CoreRead && prevState == gmars.CoreDecremented && prevWar == curWar {
+			g.BlitSprite(screen, SpriteShelfFull, a, curWar)
+		} else if curState == gmars.CoreExecuted && mem.Op != gmars.DAT {
+			g.BlitSprite(screen, SpriteTowerAlone, a, curWar)
+		} else if curState == gmars.CoreDecremented {
+			g.BlitSprite(screen, SpriteTrap, a, curWar)
+		} else if curState == gmars.CoreIncremented {
+			g.BlitSprite(screen, SpriteTrap, a, curWar)
+		} else if curState == gmars.CoreRead {
+			g.BlitSprite(screen, SpriteEye, a, curWar)
 		}
 	}
 
 	wc := g.sim.WarriorCount()
-	hueIncr := (2 * math.Pi) / float64(wc)
-	hue := 2 * math.Pi / 4.0
 	for i := 0; i < int(wc); i++ {
 		w := g.sim.GetWarrior(i)
 		if w == nil || !w.Alive() {
 			continue
 		}
 
-		valDecr := 1.0 / float64(len(w.Queue()))
+		valDecr := 0.7 / float64(len(w.Queue()))
 		val := 1.0
 		for _, pc := range w.Queue()[1:] {
-			g.BlitSpriteWithHue(screen, SpriteHead, pc, hue, 1.0, val)
+			g.BlitSpriteSV(screen, SpriteHead, pc, i, val, val)
 			val -= valDecr
 		}
 
 		pc, _ := w.NextPC()
-		g.BlitSpriteWithHue(screen, SpriteHeadActive, pc, hue, 1.0, 1.0)
-
-		hue += hueIncr
+		g.BlitSprite(screen, SpriteHeadActive, pc, i)
 	}
 
 	// Draw info

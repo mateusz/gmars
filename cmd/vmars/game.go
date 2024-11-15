@@ -14,6 +14,7 @@ func NewGame(sim gmars.ReportingSimulator, rec *gmars.StateRecorder, defaultSpee
 		sim:       sim,
 		rec:       *rec,
 		speedStep: defaultSpeedStep,
+		hues:      []float64{90.0, 270.0},
 	}
 	game.precomputeSprites()
 	return game
@@ -26,7 +27,8 @@ type Game struct {
 	finished    bool
 	speedStep   int
 	counter     int
-	spriteCache []*ebiten.Image
+	spriteCache [][]*ebiten.Image
+	hues        []float64
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
