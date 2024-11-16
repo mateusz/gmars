@@ -50,7 +50,8 @@ func (t token) IsOp() bool {
 }
 
 func (t token) NoOperandsOk() bool {
-	return strings.ToLower(t.val) == "end"
+	lower := strings.ToLower(t.val)
+	return lower == "end" || lower == "rof"
 }
 
 func (t token) IsPseudoOp() bool {
@@ -71,7 +72,7 @@ func (t token) IsPseudoOp() bool {
 }
 
 func (t token) IsExpressionTerm() bool {
-	if t.typ == tokExprOp || t.typ == tokNumber {
+	if t.typ == tokExprOp || t.typ == tokNumber || t.typ == tokText {
 		return true
 	}
 	return false

@@ -2,6 +2,7 @@ package gmars
 
 import (
 	"fmt"
+	"strings"
 )
 
 type lineType uint8
@@ -22,16 +23,11 @@ type sourceLine struct {
 	labels   []string
 	op       string
 	amode    string
-	a        *expression
+	a        []token
 	bmode    string
-	b        *expression
+	b        []token
 	comment  string
 	newlines int
-}
-
-type sourceFile struct {
-	lines   []sourceLine
-	symbols map[string]int
 }
 
 type parser struct {
@@ -44,15 +40,14 @@ type parser struct {
 	atEOF       bool
 	err         error
 	currentLine sourceLine
+	metadata    WarriorData
 
 	// collected lines
 	lines []sourceLine
 
-	// line number of symbol definitions
-	symbols map[string]int
-
-	// line number of first refernces to symbols to check for
-	// undeclared references at the end of the token stream
+	// maps of symbol definitions and references used to verify that each
+	// symbol is defined exactly once and each reference is defined.
+	symbols    map[string]int
 	references map[string]int
 }
 
@@ -84,14 +79,30 @@ type parseStateFn func(p *parser) parseStateFn
 // comment line:
 //
 //	line -> line
-func (p *parser) parse() (*sourceFile, error) {
+func (p *parser) parse() ([]sourceLine, WarriorData, error) {
 	for state := parseLine; state != nil; {
 		state = state(p)
 	}
 	if p.err != nil {
-		return nil, p.err
+		return nil, WarriorData{}, p.err
 	}
-	return &sourceFile{lines: p.lines, symbols: p.symbols}, nil
+
+	err := p.validateSymbols()
+	if err != nil {
+		return nil, WarriorData{}, err
+	}
+
+	return p.lines, p.metadata, nil
+}
+
+func (p *parser) validateSymbols() error {
+	for symbol, i := range p.references {
+		_, ok := p.symbols[symbol]
+		if !ok {
+			return fmt.Errorf("line %d: symbol '%s' undefined", i, symbol)
+		}
+	}
+	return nil
 }
 
 func (p *parser) next() token {
@@ -149,6 +160,13 @@ func parseLine(p *parser) parseStateFn {
 		p.currentLine.typ = lineEmpty
 		return parseEmptyLines
 	case tokComment:
+		if strings.HasPrefix(p.nextToken.val, ";name") {
+			p.metadata.Name = strings.TrimSpace(p.nextToken.val[5:])
+		} else if strings.HasPrefix(p.nextToken.val, ";author") {
+			p.metadata.Author = strings.TrimSpace(p.nextToken.val[7:])
+		} else if strings.HasPrefix(p.nextToken.val, ";strategy") {
+			p.metadata.Strategy += p.nextToken.val[10:] + "\n"
+		}
 		p.currentLine.typ = lineComment
 		return parseComment
 	case tokText:
@@ -197,6 +215,7 @@ func parseLabels(p *parser) parseStateFn {
 		p.err = fmt.Errorf("line %d: symbol '%s' redefined", p.line, p.nextToken.val)
 	}
 
+	p.symbols[p.nextToken.val] = p.line
 	p.currentLine.labels = append(p.currentLine.labels, p.nextToken.val)
 	nextToken := p.next()
 
@@ -227,7 +246,7 @@ func parsePseudoOp(p *parser) parseStateFn {
 		if lastToken.NoOperandsOk() {
 			p.currentLine.newlines += 1
 			p.lines = append(p.lines, p.currentLine)
-			return nil
+			return parseLine
 		}
 		p.err = fmt.Errorf("line %d: expected operand expression after psuedo-op '%s', got newline", p.line, lastToken.val)
 		return nil
@@ -242,7 +261,32 @@ func parsePseudoOp(p *parser) parseStateFn {
 // expressionterm: parsePseudoExpr
 // anything else: error
 func parsePseudoExpr(p *parser) parseStateFn {
-	return nil
+	if p.currentLine.a == nil {
+		p.currentLine.a = make([]token, 0)
+	}
+
+	for p.nextToken.IsExpressionTerm() {
+		if p.nextToken.typ == tokText {
+			_, ok := p.references[p.nextToken.val]
+			if !ok {
+				p.references[p.nextToken.val] = p.line
+			}
+		}
+		p.currentLine.a = append(p.currentLine.a, p.nextToken)
+		p.next()
+	}
+	switch p.nextToken.typ {
+	case tokComment:
+		return parseComment
+	case tokNewline:
+		fallthrough
+	case tokEOF:
+		p.lines = append(p.lines, p.currentLine)
+		return parseLine
+	default:
+		p.err = fmt.Errorf("line %d: expected comment or newline after expression, got '%s'", p.line, p.nextToken)
+		return nil
+	}
 }
 
 // from: parseLabels
@@ -257,19 +301,18 @@ func parseOp(p *parser) parseStateFn {
 
 	p.next()
 
-	if p.nextToken.IsExpressionTerm() {
+	if p.nextToken.IsExpressionTerm() && p.nextToken.val != "*" {
 		return parseExprA
 	}
 
 	switch p.nextToken.typ {
-	case tokComment:
-		p.err = fmt.Errorf("line %d: expected operand expression after op, got comment", p.line)
-		return nil
-	case tokNewline:
-		p.err = fmt.Errorf("line %d: expected operand expression after op, got newline", p.line)
-		return nil
 	case tokAddressMode:
 		return parseModeA
+	case tokExprOp:
+		if p.nextToken.val == "*" {
+			return parseModeA
+		}
+		return parseExprA
 	default:
 		p.err = fmt.Errorf("line %d: expected operand expression after op, got '%s'", p.line, p.nextToken)
 		return nil
@@ -280,10 +323,8 @@ func parseOp(p *parser) parseStateFn {
 // experssionterm: parseExprA
 // anything else: error
 func parseModeA(p *parser) parseStateFn {
-	if p.nextToken.typ == tokAddressMode {
-		p.currentLine.amode = p.nextToken.val
-		p.next()
-	}
+	p.currentLine.amode = p.nextToken.val
+	p.next()
 	if p.nextToken.IsExpressionTerm() {
 		return parseExprA
 	}
@@ -299,14 +340,22 @@ func parseModeA(p *parser) parseStateFn {
 // anything else: error
 func parseExprA(p *parser) parseStateFn {
 	if p.currentLine.a == nil {
-		p.currentLine.a = &expression{}
+		p.currentLine.a = make([]token, 0)
 	}
 
 	for p.nextToken.IsExpressionTerm() {
-		p.currentLine.a.AppendToken(p.nextToken)
+		if p.nextToken.typ == tokText {
+			_, ok := p.references[p.nextToken.val]
+			if !ok {
+				p.references[p.nextToken.val] = p.line
+			}
+		}
+		p.currentLine.a = append(p.currentLine.a, p.nextToken)
 		p.next()
 	}
 	switch p.nextToken.typ {
+	case tokComment:
+		return parseComment
 	case tokComma:
 		return parseComma
 	case tokNewline:
@@ -326,17 +375,23 @@ func parseExprA(p *parser) parseStateFn {
 // anything else: error
 func parseComma(p *parser) parseStateFn {
 	p.next()
-	return parseModeB
+
+	if p.nextToken.typ == tokAddressMode || (p.nextToken.typ == tokExprOp && p.nextToken.val == "*") {
+		return parseModeB
+	} else if p.nextToken.IsExpressionTerm() {
+		return parseExprB
+	} else {
+		p.err = fmt.Errorf("expected address mode or expression after comma, got '%s'", p.nextToken)
+		return nil
+	}
 }
 
 // from: parseComma
 // expressionterm: parseExprB
 // anything else: error
 func parseModeB(p *parser) parseStateFn {
-	if p.nextToken.typ == tokAddressMode {
-		p.currentLine.bmode = p.nextToken.val
-		p.next()
-	}
+	p.currentLine.bmode = p.nextToken.val
+	p.next()
 	if p.nextToken.IsExpressionTerm() {
 		return parseExprB
 	}
@@ -351,11 +406,17 @@ func parseModeB(p *parser) parseStateFn {
 // anything else: error
 func parseExprB(p *parser) parseStateFn {
 	if p.currentLine.b == nil {
-		p.currentLine.b = &expression{}
+		p.currentLine.b = make([]token, 0)
 	}
 
 	for p.nextToken.IsExpressionTerm() {
-		p.currentLine.b.AppendToken(p.nextToken)
+		if p.nextToken.typ == tokText {
+			_, ok := p.references[p.nextToken.val]
+			if !ok {
+				p.references[p.nextToken.val] = p.line
+			}
+		}
+		p.currentLine.b = append(p.currentLine.b, p.nextToken)
 		p.next()
 	}
 

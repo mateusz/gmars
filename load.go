@@ -134,6 +134,66 @@ func parseLoadFile94(reader io.Reader, coresize Address) (WarriorData, error) {
 	return data, nil
 }
 
+func getOpMode94(Op OpCode, AMode AddressMode, BMode AddressMode) (OpMode, error) {
+	switch Op {
+	case DAT:
+		return F, nil
+
+	case CMP:
+		fallthrough
+	case MOV:
+		fallthrough
+	case SEQ:
+		fallthrough
+	case SNE:
+		if AMode == IMMEDIATE {
+			return AB, nil
+		} else if BMode == IMMEDIATE {
+			return B, nil
+		} else {
+			return I, nil
+		}
+
+	case SLT:
+		if AMode == IMMEDIATE {
+			return AB, nil
+		} else {
+			return B, nil
+		}
+
+	case ADD:
+		fallthrough
+	case SUB:
+		fallthrough
+	case MUL:
+		fallthrough
+	case DIV:
+		fallthrough
+	case MOD:
+		if AMode == IMMEDIATE {
+			return AB, nil
+		} else if BMode == IMMEDIATE {
+			return B, nil
+		} else {
+			return F, nil
+		}
+
+	case JMP:
+		fallthrough
+	case JMN:
+		fallthrough
+	case JMZ:
+		fallthrough
+	case DJN:
+		fallthrough
+	case SPL:
+		fallthrough
+	case NOP:
+		return B, nil
+	}
+	return B, fmt.Errorf("unknown op code: '%s'", Op)
+}
+
 func getOpModeAndValidate88(Op OpCode, AMode AddressMode, BMode AddressMode) (OpMode, error) {
 	switch Op {
 	case DAT:

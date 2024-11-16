@@ -18,6 +18,7 @@ func main() {
 	fixedFlag := flag.Int("F", 0, "fixed position of warrior #2")
 	roundFlag := flag.Int("r", 1, "Rounds to play")
 	debugFlag := flag.Bool("debug", false, "Dump verbose reporting of simulator state")
+	assembleFlag := flag.Bool("A", false, "Assemble and output warriors only")
 	flag.Parse()
 
 	coresize := gmars.Address(*sizeFlag)
@@ -35,7 +36,12 @@ func main() {
 
 	args := flag.Args()
 
-	if len(args) < 2 || len(args) > 2 {
+	if *assembleFlag {
+		if len(args) != 1 {
+			fmt.Println("wrong number of arguments")
+			os.Exit(1)
+		}
+	} else if len(args) < 2 || len(args) > 2 {
 		fmt.Println("only 2 warrior battles supported")
 		os.Exit(1)
 	}
@@ -46,12 +52,25 @@ func main() {
 		os.Exit(1)
 	}
 	defer w1file.Close()
-	w1data, err := gmars.ParseLoadFile(w1file, config)
+	w1data, err := gmars.CompileWarrior(w1file, config)
 	if err != nil {
 		fmt.Printf("error parsing warrior file '%s': %s\n", args[0], err)
 		os.Exit(1)
 	}
 	w1file.Close()
+
+	if *assembleFlag {
+		sim, err := gmars.NewSimulator(config)
+		if err != nil {
+			fmt.Printf("error creating sim: %s", err)
+		}
+		w1, err := sim.AddWarrior(&w1data)
+		if err != nil {
+			fmt.Printf("error loading warrior: %s", err)
+		}
+		fmt.Println(w1.LoadCode())
+		return
+	}
 
 	w2file, err := os.Open(args[1])
 	if err != nil {
@@ -59,7 +78,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer w1file.Close()
-	w2data, err := gmars.ParseLoadFile(w2file, config)
+	w2data, err := gmars.CompileWarrior(w2file, config)
 	if err != nil {
 		fmt.Printf("error parsing warrior file '%s': %s\n", args[1], err)
 	}
