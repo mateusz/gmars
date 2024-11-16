@@ -90,7 +90,7 @@ func runStateRecorderTests(t *testing.T, set_name string, tests []recorderTest) 
 
 		sim, err := newReportSim(config)
 		require.NoError(t, err)
-		rec := NewStateRecorder(sim)
+		rec := NewStateRecorder(sim, 1)
 		sim.AddReporter(rec)
 		w, err := sim.addWarrior(&WarriorData{Code: code, Start: int(test.offset)})
 		require.NoError(t, err)

@@ -116,7 +116,7 @@ func main() {
 	if *debugFlag {
 		sim.AddReporter(gmars.NewDebugReporter(sim))
 	}
-	rec := gmars.NewStateRecorder(sim)
+	rec := gmars.NewStateRecorder(sim, 10)
 	rec.SetRecordRead(*showReadFlag)
 	sim.AddReporter(rec)
 
