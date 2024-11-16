@@ -40,9 +40,10 @@ func (g *Game) handleInput() {
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		g.running = !g.running
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyR) {
+		w2Start := g.config.GetW2Start()
 		g.sim.Reset()
 		g.sim.SpawnWarrior(0, 0)
-		g.sim.SpawnWarrior(1, gmars.Address(rand.Intn(7000)+200))
+		g.sim.SpawnWarrior(1, w2Start)
 		g.finished = false
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
 		g.slowDown()
